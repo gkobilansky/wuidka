@@ -111,8 +111,9 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 ## Asset Management
 
 Assets are organized into bundles defined in `src/shared/config/manifest.ts`:
-- `logo` bundle: UI assets (vite-logo.png, ts-logo.png, pixi-logo.png)
-- `sound` bundle: Audio files (forklift-effect.wav, sound-gif.gif)
+- `game-pieces` bundle: Game piece sprites (pieces.png atlas with pieces.json data)
+- `ui` bundle: User interface elements (ui.png atlas with ui.json data)  
+- `audio` bundle: Game sound effects and music (drop, merge, combo, danger, gameover sfx, background music)
 
 Assets should be placed in `public/` directory and referenced without the public prefix in the manifest.
 

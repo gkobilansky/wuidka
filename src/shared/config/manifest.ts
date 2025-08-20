@@ -4,18 +4,30 @@ export const options: LoaderOptions = {
     manifest: {
         bundles: [
             {
-                name: "logo",
+                name: "game-pieces",
                 assets: {
-                    "vite-logo": "logo/vite-logo.png",
-                    "ts-logo": "logo/ts-logo.png",
-                    "pixi-logo": "logo/pixi-logo.png"
+                    "pieces-atlas": "atlases/pieces.png",
+                    "pieces-atlas-data": "atlases/pieces.json"
                 }
             },
             {
-                name: "sound",
+                name: "ui",
                 assets: {
-                    "forklift-effect": "sound/forklift-effect.wav",
-                    "sound-gif": "sound/sound-gif.gif"
+                    "ui-atlas": "atlases/ui.png",
+                    "ui-atlas-data": "atlases/ui.json"
+                }
+            },
+            {
+                name: "audio",
+                assets: {
+                    "drop-sfx": "audio/drop.wav",
+                    "merge-small-sfx": "audio/merge-small.wav",
+                    "merge-medium-sfx": "audio/merge-medium.wav",
+                    "merge-big-sfx": "audio/merge-big.wav",
+                    "combo-sfx": "audio/combo.wav",
+                    "danger-sfx": "audio/danger.wav",
+                    "gameover-sfx": "audio/gameover.wav",
+                    "background-music": "audio/background-loop.ogg"
                 }
             }
         ]

@@ -70,6 +70,7 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 - Singleton scene manager handling scene transitions
 - Provides global width/height calculations
 - Manages application ticker and resize events
+- Exposes PixiJS application instance with renderer access
 - Scene lifecycle: init → update loop → resize → destroy
 
 **Loader System** (`src/entities/loader/`):
@@ -114,8 +115,11 @@ Assets are organized into bundles defined in `src/shared/config/manifest.ts`:
 - `game-pieces` bundle: Game piece sprites (pieces.png atlas with pieces.json data)
 - `ui` bundle: User interface elements (ui.png atlas with ui.json data)  
 - `audio` bundle: Game sound effects and music (drop, merge, combo, danger, gameover sfx, background music)
+  - **Note**: Audio bundle is currently commented out to prevent loading issues during development
 
 Assets should be placed in `public/` directory and referenced without the public prefix in the manifest.
+
+**Texture Generation**: Game pieces are generated procedurally using PixiJS Graphics and converted to textures via the renderer's `generateTexture()` method when atlas sprites are not available.
 
 ## TypeScript Configuration
 

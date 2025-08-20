@@ -29,6 +29,14 @@ export interface PanelInterface {
     resize: (fn: ResizeCallback) => void
 }
 
+export interface RendererInterface {
+    /** generate texture from graphics
+     * 
+     * @param graphics 
+     */
+    generateTexture(graphics: any): any;
+}
+
 export interface ApplicationInterface {
     /** time ticker
      * 
@@ -39,6 +47,11 @@ export interface ApplicationInterface {
      * 
      */
     stage?: StageInterface;
+
+    /** renderer
+     * 
+     */
+    renderer?: RendererInterface;
 
     /** panel with emitter
      * 

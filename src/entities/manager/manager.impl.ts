@@ -6,6 +6,10 @@ export class ManagerImpl {
     private static _app?: ApplicationInterface = undefined;
     private static _currentScene?: SceneInterface = undefined;
 
+    public static get app(): ApplicationInterface | undefined {
+        return ManagerImpl._app;
+    }
+
     public static get width() {
         return Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     }

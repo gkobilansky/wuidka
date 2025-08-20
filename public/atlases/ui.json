@@ -1,0 +1,115 @@
+{
+  "frames": {
+    "button-play": {
+      "frame": { "x": 10, "y": 10, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "button-pause": {
+      "frame": { "x": 170, "y": 10, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "button-menu": {
+      "frame": { "x": 330, "y": 10, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "button-sound": {
+      "frame": { "x": 10, "y": 80, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "button-reset": {
+      "frame": { "x": 170, "y": 80, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "button-help": {
+      "frame": { "x": 330, "y": 80, "w": 140, "h": 50 },
+      "sourceSize": { "w": 140, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 140, "h": 50 }
+    },
+    "panel-score": {
+      "frame": { "x": 10, "y": 150, "w": 190, "h": 100 },
+      "sourceSize": { "w": 190, "h": 100 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 190, "h": 100 }
+    },
+    "panel-combo": {
+      "frame": { "x": 220, "y": 150, "w": 190, "h": 100 },
+      "sourceSize": { "w": 190, "h": 100 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 190, "h": 100 }
+    },
+    "panel-next": {
+      "frame": { "x": 430, "y": 150, "w": 190, "h": 100 },
+      "sourceSize": { "w": 190, "h": 100 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 190, "h": 100 }
+    },
+    "button-small-1": {
+      "frame": { "x": 10, "y": 270, "w": 110, "h": 50 },
+      "sourceSize": { "w": 110, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 110, "h": 50 }
+    },
+    "button-small-2": {
+      "frame": { "x": 140, "y": 270, "w": 110, "h": 50 },
+      "sourceSize": { "w": 110, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 110, "h": 50 }
+    },
+    "button-small-3": {
+      "frame": { "x": 270, "y": 270, "w": 110, "h": 50 },
+      "sourceSize": { "w": 110, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 110, "h": 50 }
+    },
+    "button-small-4": {
+      "frame": { "x": 400, "y": 270, "w": 110, "h": 50 },
+      "sourceSize": { "w": 110, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 110, "h": 50 }
+    },
+    "icon-play": {
+      "frame": { "x": 10, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-pause": {
+      "frame": { "x": 80, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-sound-on": {
+      "frame": { "x": 150, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-sound-off": {
+      "frame": { "x": 220, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-menu": {
+      "frame": { "x": 290, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-help": {
+      "frame": { "x": 360, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-round-1": {
+      "frame": { "x": 455, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    },
+    "icon-round-2": {
+      "frame": { "x": 505, "y": 340, "w": 50, "h": 50 },
+      "sourceSize": { "w": 50, "h": 50 },
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 50, "h": 50 }
+    }
+  },
+  "meta": {
+    "image": "ui.png",
+    "format": "RGBA8888",
+    "size": { "w": 800, "h": 600 },
+    "scale": "1"
+  }
+}

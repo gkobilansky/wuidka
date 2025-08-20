@@ -173,4 +173,11 @@ All game parameters are centralized in `src/shared/config/game-config.ts`:
 4. **Debug Mode**: Physics world debug rendering available in development
 5. **Performance**: Automatic body cleanup and limits prevent memory issues
 
+## Testing and Verification
+
+- **Development Server**: The project typically runs with `npm run dev` in a separate browser tab with hot reload enabled
+- **UI/UX Changes**: User manually tests UI/UX updates in the running development server to verify functionality
+- **No Build Required**: Skip `npm run build` during development iterations unless specifically requested
+- **Manual Verification**: User will test game interactions, input handling, and visual changes directly in the browser
+
 See PRD.md for complete game design specification.

@@ -111,10 +111,10 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.nextPiecePreview.position.set(this.gameWidth - 80, 50);
         this.addChild(this.nextPiecePreview);
         
-        // Ghost piece for aiming
+        // Ghost piece for aiming (positioned at top center)
         this.ghostPiece = this.createTierSprite(this.spawner.getCurrentTier());
         this.ghostPiece.alpha = 0.5;
-        this.ghostPiece.position.set(this.gameWidth / 2, 80);
+        this.ghostPiece.position.set(this.gameWidth / 2, 40);
         this.addChild(this.ghostPiece);
     }
     
@@ -139,6 +139,8 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
     
     private onPointerDown(event: any): void {
+        if (this.isDropping) return;
+        
         // Update ghost position on touch start
         this.onPointerMove(event);
     }
@@ -147,17 +149,24 @@ export class GameScene extends PixiContainer implements SceneInterface {
         if (this.isDropping) return;
         if (!this.spawner.canDrop()) return;
         
+        // Prevent event bubbling
+        event.stopPropagation();
+        
         this.dropPiece();
     }
     
     private dropPiece(): void {
+        // Double-check conditions at the moment of dropping
+        if (this.isDropping) return;
+        if (!this.spawner.canDrop()) return;
+        
         this.isDropping = true;
         
         // Get current tier and consume it
         const tier = this.spawner.consumePiece();
         
         // Create physics piece at ghost position
-        const dropY = 100; // Above the play area
+        const dropY = 60; // Just below the ghost piece
         this.physicsWorld.createPiece(tier, this.ghostX, dropY);
         
         // Update ghost piece to show next piece
@@ -174,7 +183,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.removeChild(this.ghostPiece);
         this.ghostPiece = this.createTierSprite(currentTier);
         this.ghostPiece.alpha = 0.5;
-        this.ghostPiece.position.set(this.ghostX, 80);
+        this.ghostPiece.position.set(this.ghostX, 40);
         this.addChild(this.ghostPiece);
     }
     
@@ -275,17 +284,29 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
 
     resize(parentWidth: number, parentHeight: number): void {
-        // Scale the game to fit the screen while maintaining aspect ratio
-        const scaleX = parentWidth / this.gameWidth;
-        const scaleY = parentHeight / this.gameHeight;
+        // Calculate padding for mobile-friendly layout
+        const minPadding = 40; // Minimum side padding
+        const bottomPadding = 120; // Extra space at bottom for UI
+        
+        // Calculate available space accounting for padding
+        const availableWidth = parentWidth - (minPadding * 2);
+        const availableHeight = parentHeight - bottomPadding;
+        
+        // Scale the game to fit the available space while maintaining aspect ratio
+        const scaleX = availableWidth / this.gameWidth;
+        const scaleY = availableHeight / this.gameHeight;
         const scale = Math.min(scaleX, scaleY);
         
         this.scale.set(scale);
         
-        // Center the game
+        // Center the game horizontally, with some top padding
+        const scaledWidth = this.gameWidth * scale;
+        const scaledHeight = this.gameHeight * scale;
+        const topPadding = 20;
+        
         this.position.set(
-            (parentWidth - this.gameWidth * scale) / 2,
-            (parentHeight - this.gameHeight * scale) / 2
+            (parentWidth - scaledWidth) / 2,
+            topPadding
         );
     }
     

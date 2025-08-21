@@ -16,6 +16,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private ghostPiece: PixiSprite;
     private dangerLine: PixiGraphics;
     private floorRect: PixiGraphics;
+    private gameBoard: PixiGraphics;
     
     // Game state
     private score: number = 0;
@@ -23,14 +24,12 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private gameWidth: number;
     private gameHeight: number;
     private isDropping: boolean = false;
-    private ghostX: number = 0;
     
     // Piece tracking
     private pieceSprites: Map<string, PixiSprite> = new Map();
 
     constructor() {
         super();
-        this.interactive = true;
         this.position.x = 0;
         this.position.y = 0;
         
@@ -69,6 +68,13 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
     
     private setupUI(): void {
+        // Create interactive game board background
+        this.gameBoard = new PixiGraphics();
+        this.gameBoard.rect(0, 0, this.gameWidth, this.gameHeight);
+        this.gameBoard.fill(0x000000, 0.01); // Nearly transparent but interactive
+        this.gameBoard.interactive = true;
+        this.addChild(this.gameBoard);
+        
         // Score display
         this.scoreText = new PixiText({
             text: 'Score: 0',
@@ -119,55 +125,69 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
     
     private setupInput(): void {
-        this.on('pointerdown', this.onPointerDown.bind(this));
-        this.on('pointermove', this.onPointerMove.bind(this));
-        this.on('pointerup', this.onPointerUp.bind(this));
-    }
-    
-    private onPointerMove(event: any): void {
-        if (this.isDropping) return;
-        
-        const localPos = event.data.getLocalPosition(this);
-        const currentTier = this.spawner.getCurrentTier();
-        
-        // Clamp ghost position to playable area
-        const minX = currentTier.radius;
-        const maxX = this.gameWidth - currentTier.radius;
-        this.ghostX = Math.max(minX, Math.min(maxX, localPos.x));
-        
-        this.ghostPiece.position.x = this.ghostX;
+        this.gameBoard.on('pointerdown', this.onPointerDown.bind(this));
     }
     
     private onPointerDown(event: any): void {
         if (this.isDropping) return;
-        
-        // Update ghost position on touch start
-        this.onPointerMove(event);
-    }
-    
-    private onPointerUp(event: any): void {
-        if (this.isDropping) return;
         if (!this.spawner.canDrop()) return;
+        
+        // Get click/touch position
+        const localPos = event.data.getLocalPosition(this.gameBoard);
+        const currentTier = this.spawner.getCurrentTier();
+        
+        // Clamp drop position to playable area
+        const minX = currentTier.radius;
+        const maxX = this.gameWidth - currentTier.radius;
+        const dropX = Math.max(minX, Math.min(maxX, localPos.x));
         
         // Prevent event bubbling
         event.stopPropagation();
         
-        this.dropPiece();
+        this.moveAndDropPiece(dropX);
     }
     
-    private dropPiece(): void {
+    private moveAndDropPiece(dropX: number): void {
         // Double-check conditions at the moment of dropping
         if (this.isDropping) return;
         if (!this.spawner.canDrop()) return;
         
         this.isDropping = true;
         
-        // Get current tier and consume it
-        const tier = this.spawner.consumePiece();
+        // Get current tier before consuming it
+        const tier = this.spawner.getCurrentTier();
         
-        // Create physics piece at ghost position
-        const dropY = 60; // Just below the ghost piece
-        this.physicsWorld.createPiece(tier, this.ghostX, dropY);
+        // Animate ghost piece moving to target position
+        const startX = this.ghostPiece.position.x;
+        const startTime = Date.now();
+        const moveTime = 200; // 200ms to move horizontally
+        
+        const animateMove = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / moveTime, 1);
+            
+            // Ease out animation
+            const easeProgress = 1 - Math.pow(1 - progress, 2);
+            this.ghostPiece.position.x = startX + (dropX - startX) * easeProgress;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateMove);
+            } else {
+                // Animation complete, drop the piece
+                this.dropPiece(tier, dropX);
+            }
+        };
+        
+        requestAnimationFrame(animateMove);
+    }
+    
+    private dropPiece(tier: any, dropX: number): void {
+        // Consume the piece from spawner
+        this.spawner.consumePiece();
+        
+        // Create physics piece at the target position
+        const dropY = 60; // Drop from near the top
+        this.physicsWorld.createPiece(tier, dropX, dropY);
         
         // Update ghost piece to show next piece
         this.updateGhostPiece();
@@ -183,7 +203,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.removeChild(this.ghostPiece);
         this.ghostPiece = this.createTierSprite(currentTier);
         this.ghostPiece.alpha = 0.5;
-        this.ghostPiece.position.set(this.ghostX, 40);
+        this.ghostPiece.position.set(this.gameWidth / 2, 40); // Keep centered
         this.addChild(this.ghostPiece);
     }
     

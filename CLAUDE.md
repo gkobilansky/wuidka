@@ -98,7 +98,7 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 
 **Game Scene Integration**:
 - Real-time physics simulation with visual sync
-- Touch/mouse input handling for piece aiming
+- Click-to-drop input handling with animated piece movement to target location
 - Score and combo UI updates
 - Centered portrait-oriented canvas with phone-like dimensions (400x700px)
 - Game container with responsive constraints and modern styling
@@ -155,7 +155,7 @@ This is a fully functional Suika-style merge puzzle game with:
 - **Merge Mechanics**: Same-tier collision detection with velocity/overlap confirmation
 - **Scoring**: Base points + combo multipliers (up to 1.5x) within 2-second windows
 - **Spawning**: Turn-based tier progression (tier 1 only for first 2 turns, then tiers 1-5 via bag randomization)
-- **Controls**: Touch/mouse aiming with ghost preview and drop rate limiting
+- **Controls**: Click/touch anywhere on game board to drop pieces at that x-coordinate with animated piece movement
 - **Mobile-first**: Portrait orientation with responsive scaling
 
 ## Game Configuration

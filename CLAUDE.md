@@ -88,7 +88,6 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 - Bag randomization preventing duplicate sequences
 - Difficulty scaling based on game time
 - Drop rate limiting (6 drops per 10 seconds)
-- Preview system for next piece
 
 **Merge System** (`src/systems/merge-system.ts`):
 - Collision detection for same-tier pieces
@@ -99,7 +98,6 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 **Game Scene Integration**:
 - Real-time physics simulation with visual sync
 - Touch/mouse input handling for piece aiming
-- Ghost piece preview system
 - Score and combo UI updates
 - Centered portrait-oriented canvas with phone-like dimensions (400x700px)
 - Game container with responsive constraints and modern styling

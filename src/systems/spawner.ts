@@ -79,9 +79,6 @@ export class Spawner {
   private dropHistory: number[] = []; // Timestamps of recent drops
   private gameStartTime: number;
 
-  // Callbacks
-  public onPiecePreview?: (tier: TierConfig) => void;
-
   constructor() {
     this.bagRandomizer = new BagRandomizer();
     this.gameStartTime = Date.now();
@@ -90,7 +87,6 @@ export class Spawner {
     this.currentTierId = this.bagRandomizer.draw();
     this.nextTierId = this.bagRandomizer.draw();
     
-    this.updatePreview();
   }
 
   public getCurrentTier(): TierConfig {
@@ -137,20 +133,12 @@ export class Spawner {
     this.currentTierId = this.nextTierId;
     this.nextTierId = this.bagRandomizer.draw();
     
-    // Update preview
-    this.updatePreview();
-    
     // Update difficulty based on game time
     this.updateDifficulty();
     
     return currentTier;
   }
 
-  private updatePreview(): void {
-    if (this.onPiecePreview) {
-      this.onPiecePreview(this.getNextTier());
-    }
-  }
 
   private updateDifficulty(): void {
     const gameTimeSeconds = (Date.now() - this.gameStartTime) / 1000;
@@ -182,6 +170,5 @@ export class Spawner {
     this.currentTierId = this.bagRandomizer.draw();
     this.nextTierId = this.bagRandomizer.draw();
     
-    this.updatePreview();
   }
 }

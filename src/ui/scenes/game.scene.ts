@@ -13,7 +13,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
     // UI Elements
     private scoreText: PixiText;
     private comboText: PixiText;
-    private nextPiecePreview: PixiSprite;
     private ghostPiece: PixiSprite;
     private dangerLine: PixiGraphics;
     private floorRect: PixiGraphics;
@@ -50,9 +49,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Initialize spawner
         this.spawner = new Spawner();
-        this.spawner.onPiecePreview = (tier) => {
-            this.updateNextPiecePreview(tier);
-        };
         
         // Initialize merge system
         this.mergeSystem = new MergeSystem(this.physicsWorld);
@@ -114,11 +110,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.floorRect.rect(0, floorY - floorThickness / 2, this.gameWidth, floorThickness);
         this.floorRect.fill(0x8B4513); // Brown color for floor
         this.addChild(this.floorRect);
-        
-        // Next piece preview (top right)
-        this.nextPiecePreview = this.createTierSprite(this.spawner.getNextTier());
-        this.nextPiecePreview.position.set(this.gameWidth - 80, 50);
-        this.addChild(this.nextPiecePreview);
         
         // Ghost piece for aiming (positioned at top center)
         this.ghostPiece = this.createTierSprite(this.spawner.getCurrentTier());
@@ -194,13 +185,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.ghostPiece.alpha = 0.5;
         this.ghostPiece.position.set(this.ghostX, 40);
         this.addChild(this.ghostPiece);
-    }
-    
-    private updateNextPiecePreview(tier: TierConfig): void {
-        this.removeChild(this.nextPiecePreview);
-        this.nextPiecePreview = this.createTierSprite(tier);
-        this.nextPiecePreview.position.set(this.gameWidth - 80, 50);
-        this.addChild(this.nextPiecePreview);
     }
     
     private createTierSprite(tier: TierConfig): PixiSprite {

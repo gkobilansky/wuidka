@@ -61,8 +61,7 @@ Drop-and-merge puzzle game where similarly ranked pieces collide, combine, and e
 
 ### 6.3 Spawn System
 - **Bag RNG**: full set of low-tier pieces shuffled; draw without replacement; refill when empty.
-- **Preview:** Show next piece (right side UI).
-- **Anti-frustration:** don’t spawn largest piece in first 30 seconds.
+- **Anti-frustration:** don’t spawn largest piece 
 
 ### 6.4 Physics
 - Gravity: 1.6 × default (tweakable).
@@ -214,7 +213,6 @@ config.ts
 
 ### Spawner.ts
 - Bag RNG implementation.
-- Ghost preview sprite at top clamp(x in [left+radius, right−radius]).
 - Drop rate cooldown.
 
 ### MergeSystem.ts
@@ -231,7 +229,7 @@ config.ts
 - Respect “Reduce Motion”.
 
 ### UI/HUD
-- Score counter; Next preview; Sound toggle; Pause button.
+- Score counter; Sound toggle; Pause button.
 - Danger line indicator; blink when any centroid > line.
 
 ### Game States
@@ -293,7 +291,6 @@ export const GAME_CONFIG = {
 ## Manual Test Checklist
 
 * [ ] First tap unlocks audio on iOS; mute toggle works/persists.
-* [ ] Ghost preview clamps within walls; drop feels responsive.
 * [ ] Two identical tiers merge reliably (no phantom misses).
 * [ ] Combo multiplier increases with rapid merges; decays after 2s.
 * [ ] Lose condition only after 1.5s above top; visible/aural warning precedes it.

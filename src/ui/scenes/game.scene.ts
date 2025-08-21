@@ -16,6 +16,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private nextPiecePreview: PixiSprite;
     private ghostPiece: PixiSprite;
     private dangerLine: PixiGraphics;
+    private floorRect: PixiGraphics;
     
     // Game state
     private score: number = 0;
@@ -105,6 +106,14 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.dangerLine.lineTo(this.gameWidth, GAME_CONFIG.dangerLineY);
         this.dangerLine.stroke();
         this.addChild(this.dangerLine);
+        
+        // Floor rectangle
+        const floorThickness = 20;
+        const floorY = this.gameHeight - floorThickness / 2;
+        this.floorRect = new PixiGraphics();
+        this.floorRect.rect(0, floorY - floorThickness / 2, this.gameWidth, floorThickness);
+        this.floorRect.fill(0x8B4513); // Brown color for floor
+        this.addChild(this.floorRect);
         
         // Next piece preview (top right)
         this.nextPiecePreview = this.createTierSprite(this.spawner.getNextTier());

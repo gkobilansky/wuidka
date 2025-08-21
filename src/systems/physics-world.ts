@@ -56,7 +56,7 @@ export class PhysicsWorld {
     // Floor
     this.floor = Bodies.rectangle(
       worldWidth / 2, 
-      worldHeight + wallThickness / 2, 
+      worldHeight - wallThickness / 2, 
       worldWidth + wallThickness * 2, 
       wallThickness,
       { isStatic: true, label: 'floor' }

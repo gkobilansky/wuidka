@@ -2,8 +2,7 @@ import { GAME_CONFIG, TierConfig, getTierById } from '../shared/config/game-conf
 
 export class BagRandomizer {
   private bag: number[] = [];
-  private readonly lowTierIds = [1, 2, 3]; // Tiers that can spawn initially
-  private readonly midTierIds = [4, 5, 6]; // Tiers available after 60s
+  private readonly allowedTierIds = [1, 2, 3, 4, 5]; // Only tiers 1-5 can be spawned
   
   constructor() {
     this.refillBag();
@@ -12,14 +11,10 @@ export class BagRandomizer {
   private refillBag(): void {
     this.bag = [];
     
-    // Add low tier pieces (more common early game)
-    for (let i = 0; i < 3; i++) {
-      this.bag.push(...this.lowTierIds);
+    // Add all allowed tier pieces evenly
+    for (let i = 0; i < 2; i++) {
+      this.bag.push(...this.allowedTierIds);
     }
-    
-    // Add some mid-tier pieces (unlocked later)
-    // TODO: Make this time-based based on game duration
-    this.bag.push(...this.midTierIds);
     
     // Shuffle the bag
     this.shuffleBag();
@@ -32,7 +27,12 @@ export class BagRandomizer {
     }
   }
 
-  public draw(): number {
+  public draw(turnCount: number = 0): number {
+    // For first 2 turns, only return tier 1
+    if (turnCount < 2) {
+      return 1;
+    }
+    
     if (this.bag.length === 0) {
       this.refillBag();
     }
@@ -40,35 +40,17 @@ export class BagRandomizer {
     return this.bag.pop()!;
   }
 
-  public peek(): number {
+  public peek(turnCount: number = 0): number {
+    // For first 2 turns, only show tier 1
+    if (turnCount < 2) {
+      return 1;
+    }
+    
     if (this.bag.length === 0) {
       this.refillBag();
     }
     
     return this.bag[this.bag.length - 1];
-  }
-
-  public updateDifficulty(gameTimeSeconds: number): void {
-    // Adjust bag contents based on game time
-    // This is called periodically to increase difficulty
-    
-    if (gameTimeSeconds < 30) {
-      // First 30s: only tier 1-3, gentler
-      this.lowTierIds.length = 3; // [1, 2, 3]
-    } else if (gameTimeSeconds < 60) {
-      // After 30s: can include tier 4
-      if (!this.midTierIds.includes(4)) {
-        this.midTierIds.push(4);
-      }
-    } else if (gameTimeSeconds < 120) {
-      // After 60s: include tiers 4-6
-      this.midTierIds.length = 3; // [4, 5, 6]
-    } else {
-      // After 120s: occasional tier 7
-      if (!this.midTierIds.includes(7)) {
-        this.midTierIds.push(7);
-      }
-    }
   }
 }
 
@@ -78,14 +60,15 @@ export class Spawner {
   private nextTierId: number;
   private dropHistory: number[] = []; // Timestamps of recent drops
   private gameStartTime: number;
+  private turnCount: number = 0; // Track number of turns (pieces consumed)
 
   constructor() {
     this.bagRandomizer = new BagRandomizer();
     this.gameStartTime = Date.now();
     
-    // Initialize current and next pieces
-    this.currentTierId = this.bagRandomizer.draw();
-    this.nextTierId = this.bagRandomizer.draw();
+    // Initialize current and next pieces based on turn count
+    this.currentTierId = this.bagRandomizer.draw(this.turnCount);
+    this.nextTierId = this.bagRandomizer.draw(this.turnCount + 1);
     
   }
 
@@ -129,21 +112,17 @@ export class Spawner {
     // Get current piece
     const currentTier = this.getCurrentTier();
     
-    // Advance to next piece
-    this.currentTierId = this.nextTierId;
-    this.nextTierId = this.bagRandomizer.draw();
+    // Increment turn count
+    this.turnCount++;
     
-    // Update difficulty based on game time
-    this.updateDifficulty();
+    // Advance to next piece based on turn count
+    this.currentTierId = this.nextTierId;
+    this.nextTierId = this.bagRandomizer.draw(this.turnCount + 1);
     
     return currentTier;
   }
 
 
-  private updateDifficulty(): void {
-    const gameTimeSeconds = (Date.now() - this.gameStartTime) / 1000;
-    this.bagRandomizer.updateDifficulty(gameTimeSeconds);
-  }
 
   public getDropCooldownProgress(): number {
     if (this.canDrop()) return 1.0; // Ready to drop
@@ -166,9 +145,10 @@ export class Spawner {
     this.bagRandomizer = new BagRandomizer();
     this.dropHistory = [];
     this.gameStartTime = Date.now();
+    this.turnCount = 0;
     
-    this.currentTierId = this.bagRandomizer.draw();
-    this.nextTierId = this.bagRandomizer.draw();
+    this.currentTierId = this.bagRandomizer.draw(this.turnCount);
+    this.nextTierId = this.bagRandomizer.draw(this.turnCount + 1);
     
   }
 }

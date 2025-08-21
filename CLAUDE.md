@@ -85,9 +85,10 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 - Debug rendering support for development (currently disabled in production)
 
 **Spawner System** (`src/systems/spawner.ts`):
-- Bag randomization preventing duplicate sequences
-- Difficulty scaling based on game time
+- Turn-based tier progression: First 2 turns drop only tier 1 (Dot) pieces
+- Bag randomization for tiers 1-5 after initial turns (higher tiers only reachable through merging)
 - Drop rate limiting (6 drops per 10 seconds)
+- Turn counter tracking for progressive difficulty
 
 **Merge System** (`src/systems/merge-system.ts`):
 - Collision detection for same-tier pieces
@@ -153,7 +154,7 @@ This is a fully functional Suika-style merge puzzle game with:
 - **Tier System**: 12-tier progression from Dot to Nova with exponential scoring
 - **Merge Mechanics**: Same-tier collision detection with velocity/overlap confirmation
 - **Scoring**: Base points + combo multipliers (up to 1.5x) within 2-second windows
-- **Spawning**: Bag randomization with difficulty scaling over time
+- **Spawning**: Turn-based tier progression (tier 1 only for first 2 turns, then tiers 1-5 via bag randomization)
 - **Controls**: Touch/mouse aiming with ghost preview and drop rate limiting
 - **Mobile-first**: Portrait orientation with responsive scaling
 

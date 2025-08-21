@@ -45,7 +45,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
 
     private setupSystems(): void {
         // Initialize physics world
-        this.physicsWorld = new PhysicsWorld(this.gameWidth, this.gameHeight, true); // Debug enabled
+        this.physicsWorld = new PhysicsWorld(this.gameWidth, this.gameHeight, false); // Debug disabled
         
         // Initialize spawner
         this.spawner = new Spawner();

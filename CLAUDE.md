@@ -82,7 +82,7 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 - Matter.js engine integration with fixed timestep
 - Boundary creation (walls, floor) and piece management
 - Collision detection and body lifecycle management
-- Debug rendering support for development
+- Debug rendering support for development (currently disabled in production)
 
 **Spawner System** (`src/systems/spawner.ts`):
 - Bag randomization preventing duplicate sequences
@@ -101,6 +101,8 @@ The codebase follows **MVP (Model-View-Presenter)** design pattern with clear se
 - Touch/mouse input handling for piece aiming
 - Ghost piece preview system
 - Score and combo UI updates
+- Centered portrait-oriented canvas with phone-like dimensions (400x700px)
+- Game container with responsive constraints and modern styling
 
 **Bootstrap Flow** (`src/main.ts`):
 1. Create PixiJS application with device-aware settings

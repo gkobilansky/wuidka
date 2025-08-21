@@ -38,7 +38,7 @@ export const GAME_CONFIG: GameConfig = {
   
   // Physics settings from PRD
   gravity: 1.6,
-  restitution: 0.03, // low bounciness
+  restitution: 0.3, // moderate bounce
   friction: 0.05,
   airFriction: 0.02,
   maxBodies: 120,
@@ -46,7 +46,7 @@ export const GAME_CONFIG: GameConfig = {
   // Game mechanics
   dangerLineY: 160, // pixels from top
   comboWindowMs: 2000, // 2 second combo window
-  mergeRestMs: 300, // ms to wait before confirming merge
+  mergeRestMs: 50, // ms to wait before confirming merge (reduced for sticky pieces)
   gameOverDelayMs: 1500, // 1.5s above danger line triggers game over
   
   // Input rate limiting

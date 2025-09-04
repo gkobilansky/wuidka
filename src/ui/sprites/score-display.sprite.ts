@@ -3,16 +3,15 @@ import { PixiText, PixiGraphics, PixiContainer } from "../../plugins/engine";
 export interface ScoreDisplayConfig {
     width?: number;
     height?: number;
-    backgroundColor?: number;
+    backgroundColor?: number; // unused (background removed)
     textColor?: number;
-    borderColor?: number;
+    borderColor?: number; // unused (border removed)
     fontSize?: number;
     padding?: number;
 }
 
 export class ScoreDisplaySprite extends PixiContainer {
-    private background: PixiGraphics;
-    private scoreLabel: PixiText;
+    private background?: PixiGraphics; // background removed; kept optional for API stability
     private scoreValue: PixiText;
     private config: ScoreDisplayConfig;
     private currentScore: number = 0;
@@ -21,57 +20,47 @@ export class ScoreDisplaySprite extends PixiContainer {
         super();
         this.config = {
             width: 200,
-            height: 80,
-            backgroundColor: 0x1a202c,
-            textColor: 0xffffff,
-            borderColor: 0x4a5568,
-            fontSize: 18,
-            padding: 12,
+            height: 48,
+            backgroundColor: 0x000000,
+            textColor: 0x60a5fa, // light/medium blue
+            borderColor: 0x000000,
+            fontSize: 36, // larger default
+            padding: 8,
             ...config
         };
-        
-        this.createBackground();
-        this.createLabels();
+
+        // Background intentionally omitted for a cleaner look
+        // this.createBackground();
+        this.createValue();
     }
     
     private createBackground(): void {
-        this.background = new PixiGraphics();
-        this.background
-            .roundRect(0, 0, this.config.width!, this.config.height!, 12)
-            .fill(this.config.backgroundColor!)
-            .stroke({ width: 2, color: this.config.borderColor });
-        this.addChild(this.background);
+        // Background removed; no-op
     }
-    
-    private createLabels(): void {
-        this.scoreLabel = new PixiText({
-            text: 'SCORE',
-            style: {
-                fontFamily: 'Arial',
-                fontSize: this.config.fontSize! * 0.7,
-                fill: this.config.textColor,
-                fontWeight: 'bold',
-                align: 'center',
-            }
-        });
-        
-        this.scoreLabel.anchor.set(0.5, 0);
-        this.scoreLabel.position.set(this.config.width! / 2, this.config.padding!);
-        this.addChild(this.scoreLabel);
-        
+
+    private createValue(): void {
         this.scoreValue = new PixiText({
             text: '0',
             style: {
                 fontFamily: 'Arial',
-                fontSize: this.config.fontSize! * 1.3,
-                fill: 0xffd700,
-                fontWeight: 'bold',
-                align: 'center',
+                fontSize: this.config.fontSize!,
+                fill: this.config.textColor,
+                fontWeight: '900',
+                align: 'left',
+                // subtle stroke and minimal shadow for contrast
+                stroke: 0x000000,
+                strokeThickness: 1,
+                dropShadow: true,
+                dropShadowColor: 0x000000,
+                dropShadowBlur: 1,
+                dropShadowDistance: 1,
+                dropShadowAngle: Math.PI / 3
             }
         });
-        
-        this.scoreValue.anchor.set(0.5, 1);
-        this.scoreValue.position.set(this.config.width! / 2, this.config.height! - this.config.padding!);
+
+        // Left-top aligned for "left-centered" look near canvas edge
+        this.scoreValue.anchor.set(0, 0);
+        this.scoreValue.position.set(0, 0);
         this.addChild(this.scoreValue);
     }
     

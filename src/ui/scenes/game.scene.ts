@@ -1,4 +1,5 @@
 import { PixiContainer, PixiSprite, PixiText, PixiGraphics } from "../../plugins/engine";
+import { ScoreDisplaySprite } from "../sprites";
 import { Manager, SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
@@ -11,12 +12,15 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private mergeSystem: MergeSystem;
     
     // UI Elements
-    private scoreText: PixiText;
-    private comboText: PixiText;
+    private scoreDisplay: ScoreDisplaySprite;
+    // Combo notifications
+    private comboText?: PixiText; // deprecated static combo (kept optional for compatibility)
+    private comboNotifications: { node: PixiText; vx: number; vy: number; life: number; initialLife: number }[] = [];
     private ghostPiece: PixiSprite;
     private dangerLine: PixiGraphics;
     private floorRect: PixiGraphics;
     private gameBoard: PixiGraphics;
+    private debugComboText?: PixiText;
     
     // Game state
     private score: number = 0;
@@ -75,39 +79,28 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.gameBoard.interactive = true;
         this.addChild(this.gameBoard);
         
-        // Score display
-        this.scoreText = new PixiText({
-            text: 'Score: 0',
-            style: {
-                fontFamily: 'Arial',
-                fontSize: 24,
-                fill: 0xffffff,
-                align: 'left',
-            }
-        });
-        this.scoreText.position.set(20, 20);
-        this.addChild(this.scoreText);
+        // Score display (upper-left) using dedicated sprite
+        this.scoreDisplay = new ScoreDisplaySprite({ width: 180, height: 44, fontSize: 40, textColor: 0x60a5fa });
+        this.scoreDisplay.position.set(12, 12);
+        this.addChild(this.scoreDisplay);
         
-        // Combo display
-        this.comboText = new PixiText({
+        // Static combo display removed; we now spawn floating notifications on combo
+        // Add small debug text to inspect combo/notification positions
+        this.debugComboText = new PixiText({
             text: '',
             style: {
                 fontFamily: 'Arial',
-                fontSize: 18,
-                fill: 0xffff00,
+                fontSize: 12,
+                fill: 0x111827, // dark gray for white backgrounds
                 align: 'left',
+                stroke: 0xffffff,
+                strokeThickness: 1,
             }
         });
-        this.comboText.position.set(20, 50);
-        this.addChild(this.comboText);
+        this.debugComboText.position.set(12, 56);
+        this.addChild(this.debugComboText);
         
-        // Danger line
-        this.dangerLine = new PixiGraphics();
-        this.dangerLine.setStrokeStyle({ width: 2, color: 0xff0000, alpha: 0.7 });
-        this.dangerLine.moveTo(0, GAME_CONFIG.dangerLineY);
-        this.dangerLine.lineTo(this.gameWidth, GAME_CONFIG.dangerLineY);
-        this.dangerLine.stroke();
-        this.addChild(this.dangerLine);
+
         
         // Floor rectangle
         const floorThickness = 20;
@@ -263,15 +256,56 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
     
     private updateScoreDisplay(): void {
-        this.scoreText.text = `Score: ${this.score}`;
+        if (this.scoreDisplay && typeof this.scoreDisplay.setScore === 'function') {
+            this.scoreDisplay.setScore(this.score);
+        }
     }
     
     private updateComboDisplay(count: number, multiplier: number): void {
+        // Spawn a floating, red combo notification on the right side
         if (count > 1) {
-            this.comboText.text = `Combo x${count} (${multiplier.toFixed(1)}x)`;
+            console.log(`[Combo] spawning notification: count=${count}, mult=${multiplier.toFixed(2)}`);
+            this.setDebugCombo(`spawn count=${count} mult=${multiplier.toFixed(2)}`);
+            this.spawnComboNotification(count, multiplier);
         } else {
-            this.comboText.text = '';
+            console.log(`[Combo] update: count=${count}, mult=${multiplier.toFixed(2)} (no notification)`);
+            this.setDebugCombo(`count=${count} mult=${multiplier.toFixed(2)}`);
         }
+    }
+
+    private spawnComboNotification(count: number, multiplier: number): void {
+        const text = new PixiText({
+            text: `Combo x${count}`,
+            style: {
+                fontFamily: 'Arial',
+                fontSize: 22,
+                fill: 0xff0000, // red
+                fontWeight: '900',
+                align: 'right',
+                stroke: 0x000000,
+                strokeThickness: 2,
+                dropShadow: true,
+                dropShadowColor: 0x000000,
+                dropShadowBlur: 1,
+                dropShadowDistance: 1,
+                dropShadowAngle: Math.PI / 3,
+            }
+        });
+        // Right-align anchor so it hugs the right edge
+        text.anchor.set(1, 0);
+        // Start near the top-right; a bit below the top UI
+        const startX = this.gameWidth - 12;
+        const startY = 80;
+        text.position.set(startX, startY);
+        this.addChild(text);
+
+        // Up-right drift velocity (pixels per second)
+        const vx = 80;  // rightward
+        const vy = -100; // upward
+        const life = 1.1; // seconds
+        this.comboNotifications.push({ node: text, vx, vy, life, initialLife: life });
+        console.log(`[Combo] notification at x=${startX.toFixed(1)}, y=${startY.toFixed(1)}, vx=${vx}, vy=${vy}`);
+        this.setDebugCombo(`at ${startX.toFixed(0)},${startY.toFixed(0)} active=${this.comboNotifications.length}`);
     }
     
     private syncPhysicsToSprites(): void {
@@ -293,7 +327,38 @@ export class GameScene extends PixiContainer implements SceneInterface {
         // Sync visual sprites with physics
         this.syncPhysicsToSprites();
         
+        // Animate floating combo notifications
+        if (this.comboNotifications.length) {
+            const dt = (framesPassed || 1) / 60; // convert frames to seconds (60fps base)
+            for (let i = this.comboNotifications.length - 1; i >= 0; i--) {
+                const n = this.comboNotifications[i];
+                n.node.position.x += n.vx * dt;
+                n.node.position.y += n.vy * dt;
+                n.life -= dt;
+                n.node.alpha = Math.max(0, n.life / n.initialLife);
+                // Remove when off-canvas or life ended
+                if (
+                    n.life <= 0 ||
+                    n.node.position.x > this.gameWidth + 50 ||
+                    n.node.position.y < -50
+                ) {
+                    this.removeChild(n.node);
+                    this.comboNotifications.splice(i, 1);
+                }
+            }
+            // Update debug with the first notification's position
+            const head = this.comboNotifications[0];
+            if (head) {
+                this.setDebugCombo(`first ${head.node.position.x.toFixed(0)},${head.node.position.y.toFixed(0)} active=${this.comboNotifications.length}`);
+            }
+        }
+        
         // TODO: Check for game over conditions
+    }
+
+    private setDebugCombo(msg: string): void {
+        if (!this.debugComboText) return;
+        this.debugComboText.text = `combo: ${msg}`;
     }
 
     resize(parentWidth: number, parentHeight: number): void {

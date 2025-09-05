@@ -14,13 +14,16 @@ export class GameScene extends PixiContainer implements SceneInterface {
     // UI Elements
     private scoreDisplay: ScoreDisplaySprite;
     // Combo notifications
-    private comboText?: PixiText; // deprecated static combo (kept optional for compatibility)
     private comboNotifications: { node: PixiText; vx: number; vy: number; life: number; initialLife: number }[] = [];
     private ghostPiece: PixiSprite;
     private dangerLine: PixiGraphics;
     private floorRect: PixiGraphics;
     private gameBoard: PixiGraphics;
-    private debugComboText?: PixiText;
+    private dangerY: number = GAME_CONFIG.dangerLineY;
+    private inDangerByPiece: Map<string, number> = new Map(); // pieceId -> turnEntered
+    private isGameOver: boolean = false;
+    private dangerSuppressUntil: number = 0; // timestamp (ms) until which we hide danger line for new drops
+    private scoreUiHeight: number = 44; // mirrors ScoreDisplay config height
     
     // Game state
     private score: number = 0;
@@ -85,22 +88,16 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.addChild(this.scoreDisplay);
         
         // Static combo display removed; we now spawn floating notifications on combo
-        // Add small debug text to inspect combo/notification positions
-        this.debugComboText = new PixiText({
-            text: '',
-            style: {
-                fontFamily: 'Arial',
-                fontSize: 12,
-                fill: 0x111827, // dark gray for white backgrounds
-                align: 'left',
-                stroke: 0xffffff,
-                strokeThickness: 1,
-            }
-        });
-        this.debugComboText.position.set(12, 56);
-        this.addChild(this.debugComboText);
         
+        // Compute dynamic danger Y just below score (fallback to config)
+        const belowScoreY = (this.scoreDisplay?.position.y || 0) + this.scoreUiHeight + 8;
+        // Use whichever is lower on the screen (greater Y) to ensure it's under the UI
+        this.dangerY = Math.max(belowScoreY, GAME_CONFIG.dangerLineY);
 
+        // Create the danger line (hidden by default)
+        this.dangerLine = new PixiGraphics();
+        this.drawDangerLine(false);
+        this.addChild(this.dangerLine);
         
         // Floor rectangle
         const floorThickness = 20;
@@ -122,6 +119,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
     
     private onPointerDown(event: any): void {
+        if (this.isGameOver) return;
         if (this.isDropping) return;
         if (!this.spawner.canDrop()) return;
         
@@ -177,6 +175,8 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private dropPiece(tier: any, dropX: number): void {
         // Consume the piece from spawner
         this.spawner.consumePiece();
+        // Suppress danger line briefly after each turn start
+        this.dangerSuppressUntil = Date.now() + GAME_CONFIG.dangerSuppressMs;
         
         // Create physics piece at the target position
         const dropY = 60; // Drop from near the top
@@ -184,11 +184,22 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Update ghost piece to show next piece
         this.updateGhostPiece();
+
+        // After a turn advances, check if any tracked danger pieces exceeded limit
+        this.checkDangerTurns();
         
         // Small delay before allowing next drop
         setTimeout(() => {
             this.isDropping = false;
         }, 200);
+    }
+
+    private drawDangerLine(visible: boolean): void {
+        this.dangerLine.clear?.();
+        // Draw a thin red line across the board at dangerY
+        this.dangerLine.rect(0, this.dangerY - 1, this.gameWidth, 2);
+        this.dangerLine.fill(0xff4d4d);
+        this.dangerLine.alpha = visible ? 1 : 0;
     }
     
     private updateGhostPiece(): void {
@@ -264,12 +275,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private updateComboDisplay(count: number, multiplier: number): void {
         // Spawn a floating, red combo notification on the right side
         if (count > 1) {
-            console.log(`[Combo] spawning notification: count=${count}, mult=${multiplier.toFixed(2)}`);
-            this.setDebugCombo(`spawn count=${count} mult=${multiplier.toFixed(2)}`);
             this.spawnComboNotification(count, multiplier);
-        } else {
-            console.log(`[Combo] update: count=${count}, mult=${multiplier.toFixed(2)} (no notification)`);
-            this.setDebugCombo(`count=${count} mult=${multiplier.toFixed(2)}`);
         }
     }
 
@@ -299,13 +305,12 @@ export class GameScene extends PixiContainer implements SceneInterface {
         text.position.set(startX, startY);
         this.addChild(text);
 
-        // Up-right drift velocity (pixels per second)
-        const vx = 80;  // rightward
-        const vy = -100; // upward
-        const life = 1.1; // seconds
+        // Up-left gentle drift to keep on-screen
+        const vx = -40;  // leftward
+        const vy = -60;  // upward
+        const life = 1.5; // seconds
         this.comboNotifications.push({ node: text, vx, vy, life, initialLife: life });
-        console.log(`[Combo] notification at x=${startX.toFixed(1)}, y=${startY.toFixed(1)}, vx=${vx}, vy=${vy}`);
-        this.setDebugCombo(`at ${startX.toFixed(0)},${startY.toFixed(0)} active=${this.comboNotifications.length}`);
+        // debug output removed
     }
     
     private syncPhysicsToSprites(): void {
@@ -319,23 +324,126 @@ export class GameScene extends PixiContainer implements SceneInterface {
         }
     }
 
+    private updateDangerState(): void {
+        // Determine which pieces are in the danger zone (any part across the line)
+        const pieces = this.physicsWorld.getAllPieces();
+        const inZone: Set<string> = new Set();
+        for (const piece of pieces) {
+            const topY = piece.body.position.y - piece.tier.radius;
+            if (topY <= this.dangerY) {
+                inZone.add(piece.id);
+                if (!this.inDangerByPiece.has(piece.id)) {
+                    // Start counting only after suppression window ends
+                    if (Date.now() >= this.dangerSuppressUntil) {
+                        this.inDangerByPiece.set(piece.id, this.spawner.getTurnCount());
+                    }
+                }
+            }
+        }
+        // Remove entries for pieces that left the zone entirely or were removed
+        for (const key of Array.from(this.inDangerByPiece.keys())) {
+            if (!inZone.has(key)) {
+                this.inDangerByPiece.delete(key);
+            }
+        }
+        // Toggle danger line visibility
+        const anyTracked = this.inDangerByPiece.size > 0;
+        const suppressionElapsed = Date.now() >= this.dangerSuppressUntil;
+        const show = anyTracked || (suppressionElapsed && inZone.size > 0);
+        this.drawDangerLine(show);
+    }
+
+    private checkDangerTurns(): void {
+        if (this.isGameOver) return;
+        const currentTurn = this.spawner.getTurnCount();
+        for (const [pieceId, enteredTurn] of this.inDangerByPiece) {
+            if (currentTurn - enteredTurn >= GAME_CONFIG.dangerTurnLimit) {
+                // Confirm the piece is still in danger at the moment of checking
+                const piece = this.physicsWorld.getPiece(pieceId);
+                if (piece) {
+                    const topY = piece.body.position.y - piece.tier.radius;
+                    if (topY <= this.dangerY) {
+                        this.endGame();
+                        return;
+                    } else {
+                        this.inDangerByPiece.delete(pieceId);
+                    }
+                } else {
+                    this.inDangerByPiece.delete(pieceId);
+                }
+            }
+        }
+    }
+
+    private endGame(): void {
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        // Pause physics
+        this.physicsWorld.pause();
+        // Disable interactions
+        this.gameBoard.interactive = false;
+        // Show overlay
+        const overlay = new PixiContainer();
+        const bg = new PixiGraphics();
+        bg.rect(0, 0, this.gameWidth, this.gameHeight);
+        bg.fill(0x000000);
+        bg.alpha = 0.5;
+        overlay.addChild(bg);
+
+        const text = new PixiText({
+            text: 'Game Over',
+            style: {
+                fontFamily: 'Arial',
+                fontSize: 48,
+                fill: 0xffffff,
+                fontWeight: '900',
+                align: 'center',
+                stroke: 0x000000,
+                strokeThickness: 4,
+                dropShadow: true,
+                dropShadowColor: 0x000000,
+                dropShadowBlur: 2,
+                dropShadowDistance: 2
+            }
+        });
+        text.anchor.set(0.5);
+        text.position.set(this.gameWidth / 2, this.gameHeight / 2);
+        overlay.addChild(text);
+
+        this.addChild(overlay);
+    }
+
     update(framesPassed: number): void {
+        if (this.isGameOver) {
+            return;
+        }
         // Update game systems
         this.physicsWorld.update(framesPassed);
         this.mergeSystem.update(framesPassed);
         
         // Sync visual sprites with physics
         this.syncPhysicsToSprites();
+        // Update danger tracking and UI each tick
+        this.updateDangerState();
         
         // Animate floating combo notifications
         if (this.comboNotifications.length) {
-            const dt = (framesPassed || 1) / 60; // convert frames to seconds (60fps base)
+            // Convert frames to seconds (60fps base) with robust numeric fallback
+            const rawFrames = Number(framesPassed);
+            const safeFrames = Number.isFinite(rawFrames) ? rawFrames : 1;
+            const dt = Math.min(Math.max(safeFrames, 0), 5) / 60;
             for (let i = this.comboNotifications.length - 1; i >= 0; i--) {
                 const n = this.comboNotifications[i];
                 n.node.position.x += n.vx * dt;
                 n.node.position.y += n.vy * dt;
                 n.life -= dt;
                 n.node.alpha = Math.max(0, n.life / n.initialLife);
+                // Guard against invalid positions
+                if (!Number.isFinite(n.node.position.x) || !Number.isFinite(n.node.position.y)) {
+                    this.removeChild(n.node);
+                    this.comboNotifications.splice(i, 1);
+                    continue;
+                }
                 // Remove when off-canvas or life ended
                 if (
                     n.life <= 0 ||
@@ -346,20 +454,13 @@ export class GameScene extends PixiContainer implements SceneInterface {
                     this.comboNotifications.splice(i, 1);
                 }
             }
-            // Update debug with the first notification's position
-            const head = this.comboNotifications[0];
-            if (head) {
-                this.setDebugCombo(`first ${head.node.position.x.toFixed(0)},${head.node.position.y.toFixed(0)} active=${this.comboNotifications.length}`);
-            }
+            // no debug overlay
         }
         
-        // TODO: Check for game over conditions
+        // Game over handled via turn-based checks on drop
     }
 
-    private setDebugCombo(msg: string): void {
-        if (!this.debugComboText) return;
-        this.debugComboText.text = `combo: ${msg}`;
-    }
+    // debug overlay removed
 
     resize(parentWidth: number, parentHeight: number): void {
         // Calculate padding for mobile-friendly layout

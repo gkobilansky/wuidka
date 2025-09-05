@@ -151,4 +151,8 @@ export class Spawner {
     this.nextTierId = this.bagRandomizer.draw(this.turnCount + 1);
     
   }
+
+  public getTurnCount(): number {
+    return this.turnCount;
+  }
 }

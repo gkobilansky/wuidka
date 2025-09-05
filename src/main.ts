@@ -12,7 +12,7 @@ import { GameScene } from './ui/scenes/game.scene';
 
 const boostsrap = async () => {
     const canvas = document.getElementById("pixi-screen") as HTMLCanvasElement;
-    const resizeTo = document.getElementById('game-container') as HTMLElement; // constrain canvas to container
+    const resizeTo = window;
     const resolution = window.devicePixelRatio || 1;
     const autoDensity = true;
     const backgroundColor = FILL_COLOR;

@@ -80,6 +80,19 @@ export class PhysicsWorld {
     }
   }
 
+  public pause(): void {
+    // Stop advancing the physics simulation without destroying pieces
+    try {
+      Runner.stop(this.runner);
+    } catch {}
+  }
+
+  public resume(): void {
+    try {
+      Runner.run(this.runner, this.engine);
+    } catch {}
+  }
+
   private setupDebugRender(worldWidth: number, worldHeight: number): void {
     const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';

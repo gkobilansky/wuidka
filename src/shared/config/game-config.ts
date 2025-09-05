@@ -20,9 +20,12 @@ export interface GameConfig {
   
   // Game mechanics
   dangerLineY: number;
+  dangerTurnLimit: number; // turns a piece can remain in danger
+  dangerFallVyThreshold: number; // minimum downward vy to consider a piece "falling"
+  dangerSuppressMs: number; // hide danger line briefly after a drop
   comboWindowMs: number;
   mergeRestMs: number;
-  gameOverDelayMs: number;
+  gameOverDelayMs: number; // legacy: time-based; kept for compatibility
   
   // Input settings
   dropRateLimit: number; // drops per 10 seconds
@@ -44,10 +47,13 @@ export const GAME_CONFIG: GameConfig = {
   maxBodies: 120,
   
   // Game mechanics
-  dangerLineY: 160, // pixels from top
+  dangerLineY: 60, // pixels from top
+  dangerTurnLimit: 6, // turns a piece can remain in danger zone
+  dangerFallVyThreshold: 0.5, // hide danger while pieces are falling faster than this vy
+  dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
   comboWindowMs: 2000, // 2 second combo window
   mergeRestMs: 50, // ms to wait before confirming merge (reduced for sticky pieces)
-  gameOverDelayMs: 1500, // 1.5s above danger line triggers game over
+  gameOverDelayMs: 1500, // legacy time-based rule; unused in turn-based danger
   
   // Input rate limiting
   dropRateLimit: 6, // 6 drops per 10 seconds initially

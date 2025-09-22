@@ -13,8 +13,8 @@ export interface NextPieceDisplayConfig {
 }
 
 export class NextPieceDisplaySprite extends PixiContainer {
-    private background: PixiGraphics;
-    private titleLabel: PixiText;
+    private background!: PixiGraphics;
+    private titleLabel!: PixiText;
     private pieceSprite?: PixiSprite;
     private config: NextPieceDisplayConfig;
     private currentTier?: TierConfig;
@@ -53,7 +53,7 @@ export class NextPieceDisplaySprite extends PixiContainer {
                 fontSize: this.config.fontSize,
                 fill: this.config.textColor,
                 fontWeight: 'bold',
-                align: 'center',
+                align: 'center'
             }
         });
         
@@ -77,7 +77,11 @@ export class NextPieceDisplaySprite extends PixiContainer {
         graphics.circle(0, 0, scaledRadius);
         graphics.stroke({ width: 2, color: 0xffffff, alpha: 0.3 });
         
-        const texture = Manager.app?.renderer.generateTexture(graphics);
+        const renderer = Manager.app?.renderer;
+        if (!renderer) {
+            throw new Error('Pixi renderer not initialized');
+        }
+        const texture = renderer.generateTexture(graphics);
         const sprite = PixiSprite.from(texture);
         sprite.anchor.set(0.5);
         return sprite;

@@ -6,7 +6,7 @@ import { Manager } from './entities/manager';
 import { IPixiApplicationOptions, PixiAssets } from './plugins/engine';
 import { Loader } from './entities/loader';
 import { options } from './shared/config/manifest';
-import { GAME_CONFIG, getNextTier, canMerge } from './shared/config/game-config';
+import { GAME_CONFIG, canMerge } from './shared/config/game-config';
 import { LoaderScene } from './ui/scenes/loader.scene';
 import { GameScene } from './ui/scenes/game.scene';
 

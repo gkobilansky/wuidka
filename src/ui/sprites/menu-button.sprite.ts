@@ -1,4 +1,5 @@
 import { PixiText, PixiGraphics, PixiContainer } from "../../plugins/engine";
+import { FederatedPointerEvent } from 'pixi.js';
 
 export interface MenuButtonConfig {
     text: string;
@@ -12,8 +13,8 @@ export interface MenuButtonConfig {
 }
 
 export class MenuButtonSprite extends PixiContainer {
-    private background: PixiGraphics;
-    private label: PixiText;
+    private background!: PixiGraphics;
+    private labelText!: PixiText;
     private iconText?: PixiText;
     private config: MenuButtonConfig;
     private defaultColor: number;
@@ -49,26 +50,26 @@ export class MenuButtonSprite extends PixiContainer {
     }
     
     private createLabel(): void {
-        this.label = new PixiText({
+        this.labelText = new PixiText({
             text: this.config.text,
             style: {
                 fontFamily: 'Arial',
                 fontSize: this.config.fontSize,
                 fill: this.config.textColor,
                 fontWeight: 'bold',
-                align: 'center',
+                align: 'center'
             }
         });
         
-        this.label.anchor.set(0.5);
+        this.labelText.anchor.set(0.5);
         
         // Adjust position based on whether there's an icon
         const textX = this.config.icon ? 
             this.config.width! * 0.6 : 
             this.config.width! / 2;
         
-        this.label.position.set(textX, this.config.height! / 2);
-        this.addChild(this.label);
+        this.labelText.position.set(textX, this.config.height! / 2);
+        this.addChild(this.labelText);
     }
     
     private createIcon(): void {
@@ -80,7 +81,7 @@ export class MenuButtonSprite extends PixiContainer {
                 fontFamily: 'Arial',
                 fontSize: this.config.fontSize! * 1.2,
                 fill: this.config.textColor,
-                align: 'center',
+                align: 'center'
             }
         });
         
@@ -126,10 +127,10 @@ export class MenuButtonSprite extends PixiContainer {
         this.drawBackground(this.defaultColor * 0.8);
     }
     
-    private onPointerUp(): void {
+    private onPointerUp(event: FederatedPointerEvent): void {
         this.scale.set(1.02);
         this.drawBackground(this.config.hoverColor!);
-        this.emit('click');
+        this.emit('pointertap', event);
     }
     
     private onPointerUpOutside(): void {
@@ -138,7 +139,7 @@ export class MenuButtonSprite extends PixiContainer {
     }
     
     public setText(text: string): void {
-        this.label.text = text;
+        this.labelText.text = text;
     }
     
     public setIcon(icon: string): void {

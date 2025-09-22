@@ -1,4 +1,5 @@
 import { PixiText, PixiGraphics, PixiContainer } from "../../plugins/engine";
+import { FederatedPointerEvent } from 'pixi.js';
 
 export interface ButtonConfig {
     text: string;
@@ -11,8 +12,8 @@ export interface ButtonConfig {
 }
 
 export class ButtonSprite extends PixiContainer {
-    private background: PixiGraphics;
-    private label: PixiText;
+    private background!: PixiGraphics;
+    private labelText!: PixiText;
     private config: ButtonConfig;
     private isPressed: boolean = false;
     
@@ -41,19 +42,19 @@ export class ButtonSprite extends PixiContainer {
     }
     
     private createLabel(): void {
-        this.label = new PixiText({
+        this.labelText = new PixiText({
             text: this.config.text,
             style: {
                 fontFamily: 'Arial',
                 fontSize: this.config.fontSize,
                 fill: this.config.textColor,
-                align: 'center',
+                align: 'center'
             }
         });
         
-        this.label.anchor.set(0.5);
-        this.label.position.set(this.config.width / 2, this.config.height / 2);
-        this.addChild(this.label);
+        this.labelText.anchor.set(0.5);
+        this.labelText.position.set(this.config.width / 2, this.config.height / 2);
+        this.addChild(this.labelText);
     }
     
     private drawBackground(pressed: boolean): void {
@@ -83,12 +84,12 @@ export class ButtonSprite extends PixiContainer {
         this.scale.set(0.95);
     }
     
-    private onPointerUp(): void {
+    private onPointerUp(event: FederatedPointerEvent): void {
         if (this.isPressed) {
             this.isPressed = false;
             this.drawBackground(false);
             this.scale.set(1);
-            this.emit('click');
+            this.emit('pointertap', event);
         }
     }
     
@@ -107,7 +108,7 @@ export class ButtonSprite extends PixiContainer {
     }
     
     public setText(text: string): void {
-        this.label.text = text;
+        this.labelText.text = text;
     }
     
     public setEnabled(enabled: boolean): void {

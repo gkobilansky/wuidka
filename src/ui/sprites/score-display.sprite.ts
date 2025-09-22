@@ -1,4 +1,4 @@
-import { PixiText, PixiGraphics, PixiContainer } from "../../plugins/engine";
+import { PixiText, PixiContainer } from "../../plugins/engine";
 
 export interface ScoreDisplayConfig {
     width?: number;
@@ -11,8 +11,7 @@ export interface ScoreDisplayConfig {
 }
 
 export class ScoreDisplaySprite extends PixiContainer {
-    private background?: PixiGraphics; // background removed; kept optional for API stability
-    private scoreValue: PixiText;
+    private scoreValue!: PixiText;
     private config: ScoreDisplayConfig;
     private currentScore: number = 0;
     
@@ -34,10 +33,6 @@ export class ScoreDisplaySprite extends PixiContainer {
         this.createValue();
     }
     
-    private createBackground(): void {
-        // Background removed; no-op
-    }
-
     private createValue(): void {
         this.scoreValue = new PixiText({
             text: '0',
@@ -48,13 +43,14 @@ export class ScoreDisplaySprite extends PixiContainer {
                 fontWeight: '900',
                 align: 'left',
                 // subtle stroke and minimal shadow for contrast
-                stroke: 0x000000,
-                strokeThickness: 1,
-                dropShadow: true,
-                dropShadowColor: 0x000000,
-                dropShadowBlur: 1,
-                dropShadowDistance: 1,
-                dropShadowAngle: Math.PI / 3
+                stroke: { color: 0x000000, width: 1 },
+                dropShadow: {
+                    color: 0x000000,
+                    blur: 1,
+                    distance: 1,
+                    angle: Math.PI / 3,
+                    alpha: 1
+                }
             }
         });
 

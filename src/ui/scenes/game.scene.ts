@@ -7,18 +7,18 @@ import { MergeSystem } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
 
 export class GameScene extends PixiContainer implements SceneInterface {
-    private physicsWorld: PhysicsWorld;
-    private spawner: Spawner;
-    private mergeSystem: MergeSystem;
+    private physicsWorld!: PhysicsWorld;
+    private spawner!: Spawner;
+    private mergeSystem!: MergeSystem;
     
     // UI Elements
-    private scoreDisplay: ScoreDisplaySprite;
+    private scoreDisplay!: ScoreDisplaySprite;
     // Combo notifications
     private comboNotifications: { node: PixiText; vx: number; vy: number; life: number; initialLife: number }[] = [];
-    private ghostPiece: PixiSprite;
-    private dangerLine: PixiGraphics;
-    private floorRect: PixiGraphics;
-    private gameBoard: PixiGraphics;
+    private ghostPiece!: PixiSprite;
+    private dangerLine!: PixiGraphics;
+    private floorRect!: PixiGraphics;
+    private gameBoard!: PixiGraphics;
     private dangerY: number = GAME_CONFIG.dangerLineY;
     private inDangerByPiece: Map<string, number> = new Map(); // pieceId -> turnEntered
     private isGameOver: boolean = false;
@@ -27,7 +27,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
     
     // Game state
     private score: number = 0;
-    private currentCombo: number = 0;
     private gameWidth: number;
     private gameHeight: number;
     private isDropping: boolean = false;
@@ -220,7 +219,11 @@ export class GameScene extends PixiContainer implements SceneInterface {
         graphics.fill(color);
         
         // Convert graphics to texture and create sprite
-        const texture = Manager.app?.renderer.generateTexture(graphics);
+        const renderer = Manager.app?.renderer;
+        if (!renderer) {
+            throw new Error('Pixi renderer not initialized');
+        }
+        const texture = renderer.generateTexture(graphics);
         const sprite = PixiSprite.from(texture);
         sprite.anchor.set(0.5);
         return sprite;
@@ -259,7 +262,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         }
     }
     
-    private handleMergeComplete(newPiece: GamePiece, mergedTier: TierConfig, score: number, multiplier: number): void {
+    private handleMergeComplete(_newPiece: GamePiece, _mergedTier: TierConfig, score: number, _multiplier: number): void {
         this.score += score;
         this.updateScoreDisplay();
         
@@ -272,14 +275,14 @@ export class GameScene extends PixiContainer implements SceneInterface {
         }
     }
     
-    private updateComboDisplay(count: number, multiplier: number): void {
+    private updateComboDisplay(count: number, _multiplier: number): void {
         // Spawn a floating, red combo notification on the right side
         if (count > 1) {
-            this.spawnComboNotification(count, multiplier);
+            this.spawnComboNotification(count, _multiplier);
         }
     }
 
-    private spawnComboNotification(count: number, multiplier: number): void {
+    private spawnComboNotification(count: number, _multiplier: number): void {
         const text = new PixiText({
             text: `Combo x${count}`,
             style: {
@@ -288,13 +291,14 @@ export class GameScene extends PixiContainer implements SceneInterface {
                 fill: 0xff0000, // red
                 fontWeight: '900',
                 align: 'right',
-                stroke: 0x000000,
-                strokeThickness: 2,
-                dropShadow: true,
-                dropShadowColor: 0x000000,
-                dropShadowBlur: 1,
-                dropShadowDistance: 1,
-                dropShadowAngle: Math.PI / 3,
+                stroke: { color: 0x000000, width: 2 },
+                dropShadow: {
+                    color: 0x000000,
+                    blur: 1,
+                    distance: 1,
+                    angle: Math.PI / 3,
+                    alpha: 1
+                }
             }
         });
         // Right-align anchor so it hugs the right edge
@@ -398,12 +402,13 @@ export class GameScene extends PixiContainer implements SceneInterface {
                 fill: 0xffffff,
                 fontWeight: '900',
                 align: 'center',
-                stroke: 0x000000,
-                strokeThickness: 4,
-                dropShadow: true,
-                dropShadowColor: 0x000000,
-                dropShadowBlur: 2,
-                dropShadowDistance: 2
+                stroke: { color: 0x000000, width: 4 },
+                dropShadow: {
+                    color: 0x000000,
+                    blur: 2,
+                    distance: 2,
+                    alpha: 1
+                }
             }
         });
         text.anchor.set(0.5);
@@ -480,7 +485,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Center the game horizontally, with some top padding
         const scaledWidth = this.gameWidth * scale;
-        const scaledHeight = this.gameHeight * scale;
         const topPadding = 20;
         
         this.position.set(

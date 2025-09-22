@@ -215,7 +215,7 @@ export class PhysicsWorld {
     return 0.001 * (radius / 20);
   }
 
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     // Matter.js handles the physics update automatically via Runner
     // This method can be used for custom logic if needed
     

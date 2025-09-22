@@ -93,7 +93,7 @@ export class MergeSystem {
     console.log(`Made pieces sticky: ${piece1.tier.name} pieces should now stick together`);
   }
 
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     const now = Date.now();
     const candidatesToProcess: string[] = [];
     const candidatesToRemove: string[] = [];

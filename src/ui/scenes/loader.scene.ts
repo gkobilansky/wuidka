@@ -10,7 +10,7 @@ export class LoaderScene extends PixiContainer implements SceneInterface {
         const parentWidth = Manager.width;
         const parentHeight = Manager.height;
 
-        const loaderBarWidth = 280;
+        const loaderBarWidth = 400;
         this._loadingBar = new LoadingBarContainer(loaderBarWidth, parentWidth, parentHeight);
         this.addChild(this._loadingBar);
     }

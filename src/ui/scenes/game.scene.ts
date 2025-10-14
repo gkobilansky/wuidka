@@ -1,10 +1,11 @@
 import { PixiContainer, PixiSprite, PixiText, PixiGraphics } from "../../plugins/engine";
 import { ScoreDisplaySprite } from "../sprites";
-import { Manager, SceneInterface } from "../../entities/manager";
+import { SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
 import { MergeSystem } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
+import { createPieceSprite } from "../utils/piece-sprite";
 
 export class GameScene extends PixiContainer implements SceneInterface {
     private physicsWorld!: PhysicsWorld;
@@ -66,7 +67,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Set up physics callbacks
         this.physicsWorld.onPieceCreated = (piece) => {
-            this.createPieceSprite(piece);
+            this.attachPieceSprite(piece);
         };
         this.physicsWorld.onPieceRemoved = (piece) => {
             this.removePieceSprite(piece);
@@ -107,7 +108,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.addChild(this.floorRect);
         
         // Ghost piece for aiming (positioned at top center)
-        this.ghostPiece = this.createTierSprite(this.spawner.getCurrentTier());
+        this.ghostPiece = createPieceSprite(this.spawner.getCurrentTier());
         this.ghostPiece.alpha = 0.5;
         this.ghostPiece.position.set(this.gameWidth / 2, 40);
         this.addChild(this.ghostPiece);
@@ -204,51 +205,14 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private updateGhostPiece(): void {
         const currentTier = this.spawner.getCurrentTier();
         this.removeChild(this.ghostPiece);
-        this.ghostPiece = this.createTierSprite(currentTier);
+        this.ghostPiece = createPieceSprite(currentTier);
         this.ghostPiece.alpha = 0.5;
         this.ghostPiece.position.set(this.gameWidth / 2, 40); // Keep centered
         this.addChild(this.ghostPiece);
     }
     
-    private createTierSprite(tier: TierConfig): PixiSprite {
-        // Create a simple colored circle for now
-        // TODO: Replace with actual tier textures from atlas
-        const graphics = new PixiGraphics();
-        const color = this.getTierColor(tier.id);
-        graphics.circle(0, 0, tier.radius);
-        graphics.fill(color);
-        
-        // Convert graphics to texture and create sprite
-        const renderer = Manager.app?.renderer;
-        if (!renderer) {
-            throw new Error('Pixi renderer not initialized');
-        }
-        const texture = renderer.generateTexture(graphics);
-        const sprite = PixiSprite.from(texture);
-        sprite.anchor.set(0.5);
-        return sprite;
-    }
-    
-    private getTierColor(tierId: number): number {
-        const colors = [
-            0xff0000, // Red
-            0xff8000, // Orange
-            0xffff00, // Yellow
-            0x80ff00, // Lime
-            0x00ff00, // Green
-            0x00ff80, // Spring Green
-            0x00ffff, // Cyan
-            0x0080ff, // Sky Blue
-            0x0000ff, // Blue
-            0x8000ff, // Purple
-            0xff00ff, // Magenta
-            0xff0080  // Pink
-        ];
-        return colors[(tierId - 1) % colors.length];
-    }
-    
-    private createPieceSprite(piece: GamePiece): void {
-        const sprite = this.createTierSprite(piece.tier);
+    private attachPieceSprite(piece: GamePiece): void {
+        const sprite = createPieceSprite(piece.tier);
         sprite.position.set(piece.body.position.x, piece.body.position.y);
         this.addChild(sprite);
         this.pieceSprites.set(piece.id, sprite);
@@ -464,8 +428,6 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Game over handled via turn-based checks on drop
     }
-
-    // debug overlay removed
 
     resize(parentWidth: number, parentHeight: number): void {
         // Calculate padding for mobile-friendly layout

@@ -25,7 +25,6 @@ export interface GameConfig {
   dangerSuppressMs: number; // hide danger line briefly after a drop
   comboWindowMs: number;
   mergeRestMs: number;
-  gameOverDelayMs: number; // legacy: time-based; kept for compatibility
   
   // Input settings
   dropRateLimit: number; // drops per 10 seconds
@@ -48,30 +47,27 @@ export const GAME_CONFIG: GameConfig = {
   
   // Game mechanics
   dangerLineY: 60, // pixels from top
-  dangerTurnLimit: 6, // turns a piece can remain in danger zone
+  dangerTurnLimit: 4, // turns a piece can remain in danger zone
   dangerFallVyThreshold: 0.5, // hide danger while pieces are falling faster than this vy
   dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
   comboWindowMs: 2000, // 2 second combo window
-  mergeRestMs: 50, // ms to wait before confirming merge (reduced for sticky pieces)
-  gameOverDelayMs: 1500, // legacy time-based rule; unused in turn-based danger
+  mergeRestMs: 50, // ms to wait before confirming merge
   
   // Input rate limiting
   dropRateLimit: 6, // 6 drops per 10 seconds initially
   
   // Tier system from PRD
   tiers: [
-    { id: 1, name: "Dot", radius: 20, points: 2 },
-    { id: 2, name: "Bead", radius: 26, points: 5 },
-    { id: 3, name: "Pebble", radius: 33, points: 10 },
-    { id: 4, name: "Marble", radius: 42, points: 20 },
-    { id: 5, name: "Orb", radius: 54, points: 35 },
-    { id: 6, name: "Bubble", radius: 70, points: 55 },
-    { id: 7, name: "Moonlet", radius: 90, points: 85 },
-    { id: 8, name: "Planetseed", radius: 115, points: 130 },
-    { id: 9, name: "Small Planet", radius: 145, points: 190 },
-    { id: 10, name: "Giant Planet", radius: 180, points: 270 },
-    { id: 11, name: "Star", radius: 220, points: 380 },
-    { id: 12, name: "Nova", radius: 260, points: 520, cap: true }
+    { id: 1, name: "Greedy Seedy", radius: 20, points: 2 },
+    { id: 2, name: "Drip Drop", radius: 26, points: 5 },
+    { id: 3, name: "Leafy Green", radius: 33, points: 10 },
+    { id: 4, name: "Funny Sunny", radius: 42, points: 20 },
+    { id: 5, name: "Da Grinda", radius: 54, points: 35 },
+    { id: 6, name: "Kief Kollection", radius: 70, points: 55 },
+    { id: 7, name: "Falshy Hashy", radius: 90, points: 85 },
+    { id: 8, name: "Gold Diamond", radius: 115, points: 130 },
+    { id: 9, name: "Flaming Fire", radius: 145, points: 190 },
+    { id: 10, name: "Big Stoner", radius: 180, points: 270, cap: true } // max tie,
   ]
 };
 

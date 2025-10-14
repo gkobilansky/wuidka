@@ -1,6 +1,6 @@
 import { PixiText, PixiGraphics, PixiContainer, PixiSprite } from "../../plugins/engine";
 import { TierConfig } from "../../shared/config/game-config";
-import { Manager } from "../../entities/manager";
+import { createPieceSprite } from "../utils/piece-sprite";
 
 export interface NextPieceDisplayConfig {
     width?: number;
@@ -62,49 +62,6 @@ export class NextPieceDisplaySprite extends PixiContainer {
         this.addChild(this.titleLabel);
     }
     
-    private createTierSprite(tier: TierConfig): PixiSprite {
-        const graphics = new PixiGraphics();
-        const color = this.getTierColor(tier.id);
-        
-        // Scale the piece to fit nicely in the display
-        const maxRadius = Math.min(this.config.width!, this.config.height!) / 3;
-        const scaledRadius = Math.min(tier.radius * 0.8, maxRadius);
-        
-        graphics.circle(0, 0, scaledRadius);
-        graphics.fill(color);
-        
-        // Add a subtle border
-        graphics.circle(0, 0, scaledRadius);
-        graphics.stroke({ width: 2, color: 0xffffff, alpha: 0.3 });
-        
-        const renderer = Manager.app?.renderer;
-        if (!renderer) {
-            throw new Error('Pixi renderer not initialized');
-        }
-        const texture = renderer.generateTexture(graphics);
-        const sprite = PixiSprite.from(texture);
-        sprite.anchor.set(0.5);
-        return sprite;
-    }
-    
-    private getTierColor(tierId: number): number {
-        const colors = [
-            0xff4444, // Red
-            0xff8844, // Orange
-            0xffff44, // Yellow
-            0x88ff44, // Lime
-            0x44ff44, // Green
-            0x44ff88, // Spring Green
-            0x44ffff, // Cyan
-            0x4488ff, // Sky Blue
-            0x4444ff, // Blue
-            0x8844ff, // Purple
-            0xff44ff, // Magenta
-            0xff4488  // Pink
-        ];
-        return colors[(tierId - 1) % colors.length];
-    }
-    
     public setNextPiece(tier: TierConfig): void {
         // Remove existing piece sprite
         if (this.pieceSprite) {
@@ -112,7 +69,9 @@ export class NextPieceDisplaySprite extends PixiContainer {
         }
         
         this.currentTier = tier;
-        this.pieceSprite = this.createTierSprite(tier);
+        const maxRadius = Math.min(this.config.width!, this.config.height!) / 3;
+        const scaledRadius = Math.min(tier.radius * 0.8, maxRadius);
+        this.pieceSprite = createPieceSprite(tier, { targetDiameter: scaledRadius * 2 });
         
         // Position the piece in the center of the display area
         const displayCenterY = this.config.padding! + this.titleLabel.height + 

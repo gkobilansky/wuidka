@@ -21,9 +21,9 @@ export class ScoreDisplaySprite extends PixiContainer {
             width: 200,
             height: 48,
             backgroundColor: 0x000000,
-            textColor: 0x60a5fa, // light/medium blue
+            textColor: 0xD7D788,
             borderColor: 0x000000,
-            fontSize: 36, // larger default
+            fontSize: 42, 
             padding: 8,
             ...config
         };
@@ -54,7 +54,6 @@ export class ScoreDisplaySprite extends PixiContainer {
             }
         });
 
-        // Left-top aligned for "left-centered" look near canvas edge
         this.scoreValue.anchor.set(0, 0);
         this.scoreValue.position.set(0, 0);
         this.addChild(this.scoreValue);

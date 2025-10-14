@@ -1,7 +1,6 @@
 import './style.css';
 import '@pixi/gif';
 import { App } from './app';
-import { FILL_COLOR } from './shared/constant/constants';
 import { Manager } from './entities/manager';
 import { IPixiApplicationOptions, PixiAssets } from './plugins/engine';
 import { Loader } from './entities/loader';
@@ -15,7 +14,7 @@ const boostsrap = async () => {
     const resizeTo = window;
     const resolution = window.devicePixelRatio || 1;
     const autoDensity = true;
-    const backgroundColor = FILL_COLOR;
+    const backgroundColor = 'rgba(227, 255, 171, 1)';
     const appOptions: Partial<IPixiApplicationOptions> = {
         canvas,
         resizeTo,

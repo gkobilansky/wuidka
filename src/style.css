@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #FFE797;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -27,7 +27,7 @@ a:hover {
 body {
   margin: 0;
   max-height: 100vh;
-  padding: 2rem;
+  padding: 4rem;
   box-sizing: border-box;
 }
 
@@ -48,7 +48,7 @@ h1 {
 
 #game-container {
   width: 400px;
-  max-height: 97vh;
+  max-height: 500px;
   position: relative;
   border-radius: 16px;
   overflow: hidden;
@@ -64,14 +64,15 @@ h1 {
 /* Scoring panel */
 #score-panel {
   width: 280px;
-  max-height: 97vh;
+  max-height: 85vh;
   overflow: auto;
-  background: transparent;
+  background: #e1e298;
+  color: #21702e;
   /* no dark background */
   border: none;
   /* remove border */
   border-radius: 16px;
-  padding: 8px;
+  padding: 4px;
   /* tighter padding */
   box-shadow: none;
   /* remove shadow */
@@ -81,22 +82,37 @@ h1 {
   margin: 0 0 12px;
   font-size: 1.2rem;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 
 #score-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
+  gap: 4px;
 }
 
 .score-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 6px 10px;
+  transition: background-color 0.25s;
+}
+
+/* Alternate complimentary pastel (lavender vs warm light) */
+#score-list .score-item:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+#score-list .score-item:nth-child(even) {
+  background: #efe8ff; /* soft lavender complement */
+}
+
+#score-list .score-item:hover {
+  background: #ffffff;
 }
 
 .score-thumb {

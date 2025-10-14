@@ -17,6 +17,11 @@ export class ScorePanelComponent {
         const spritesheet = PixiAssets.get('pieces-atlas-data') as Spritesheet | undefined;
         list.innerHTML = '';
 
+        // Add header
+        const header = document.createElement('h2');
+        header.textContent = 'Friends';
+        list.appendChild(header);
+
         for (const tier of GAME_CONFIG.tiers) {
             const item = document.createElement('div');
             item.className = 'score-item';
@@ -68,24 +73,17 @@ export class ScorePanelComponent {
         }
 
         const frame = texture.frame;
-        const trim = texture.trim;
         const computedSize = element.getBoundingClientRect().width
             || parseFloat(getComputedStyle(element).width)
             || 24;
         const scale = computedSize / Math.max(frame.width, frame.height);
         const scaledWidth = width * scale;
         const scaledHeight = height * scale;
-        const offsetX = frame.x + (trim?.x ?? 0);
-        const offsetY = frame.y + (trim?.y ?? 0);
-        const scaledFrameWidth = frame.width * scale;
-        const scaledFrameHeight = frame.height * scale;
-        const centerOffsetX = (computedSize - scaledFrameWidth) / 2;
-        const centerOffsetY = (computedSize - scaledFrameHeight) / 2;
 
         element.style.backgroundImage = `url(${url})`;
         element.style.backgroundRepeat = 'no-repeat';
         element.style.backgroundSize = `${scaledWidth}px ${scaledHeight}px`;
-        element.style.backgroundPosition = `${-(offsetX * scale) + centerOffsetX}px ${-(offsetY * scale) + centerOffsetY}px`;
+        element.style.backgroundPosition = `${-(frame.x * scale) - 2}px ${-(frame.y * scale) - 2}px`;
         element.style.backgroundColor = 'transparent';
     }
 

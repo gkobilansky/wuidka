@@ -1,6 +1,6 @@
 import { PixiContainer, PixiSprite, PixiText, PixiGraphics } from "../../plugins/engine";
-import { ScoreDisplaySprite } from "../sprites";
-import { SceneInterface } from "../../entities/manager";
+import { ButtonSprite, ScoreDisplaySprite } from "../sprites";
+import { Manager, SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
 import { MergeSystem } from "../../systems/merge-system";
@@ -352,6 +352,8 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.gameBoard.interactive = false;
         // Show overlay
         const overlay = new PixiContainer();
+        overlay.interactive = true;
+
         const bg = new PixiGraphics();
         bg.rect(0, 0, this.gameWidth, this.gameHeight);
         bg.fill({ color: 0x000000 });
@@ -376,8 +378,46 @@ export class GameScene extends PixiContainer implements SceneInterface {
             }
         });
         text.anchor.set(0.5);
-        text.position.set(this.gameWidth / 2, this.gameHeight / 2);
+        text.position.set(this.gameWidth / 2, this.gameHeight / 2 - 40);
         overlay.addChild(text);
+
+        const scoreText = new PixiText({
+            text: `Score: ${this.score}`,
+            style: {
+                fontFamily: 'Arial',
+                fontSize: 28,
+                fill: 0xffffff,
+                fontWeight: '700',
+                align: 'center',
+                stroke: { color: 0x000000, width: 3 },
+                dropShadow: {
+                    color: 0x000000,
+                    blur: 2,
+                    distance: 2,
+                    alpha: 1
+                }
+            }
+        });
+        scoreText.anchor.set(0.5);
+        scoreText.position.set(this.gameWidth / 2, text.position.y + 56);
+        overlay.addChild(scoreText);
+
+        const buttonWidth = 200;
+        const buttonHeight = 52;
+        const restartButton = new ButtonSprite({
+            text: 'Start Over',
+            width: buttonWidth,
+            height: buttonHeight,
+            backgroundColor: 0x3b82f6,
+            borderColor: 0x1d4ed8,
+            textColor: 0xffffff,
+            fontSize: 20
+        });
+        restartButton.position.set((this.gameWidth - buttonWidth) / 2, scoreText.position.y + 40);
+        restartButton.on('pointertap', () => {
+            Manager.changeScene(new GameScene());
+        });
+        overlay.addChild(restartButton);
 
         this.addChild(overlay);
     }

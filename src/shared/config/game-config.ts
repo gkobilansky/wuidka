@@ -38,7 +38,7 @@ export interface GameConfig {
 export const GAME_CONFIG: GameConfig = {
   // Mobile-friendly resolution (narrower game board)
   width: 400,  
-  height: 700,
+  height: 500,
   
   // Physics settings from PRD
   gravity: 1.6,

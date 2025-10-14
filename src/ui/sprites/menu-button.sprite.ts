@@ -96,7 +96,7 @@ export class MenuButtonSprite extends PixiContainer {
         // Rounded rectangle with gradient effect
         this.background
             .roundRect(0, 0, this.config.width!, this.config.height!, 12)
-            .fill(color);
+            .fill({ color });
             
         // Add subtle border
         this.background

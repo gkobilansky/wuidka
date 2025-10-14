@@ -70,7 +70,7 @@ export class LoadingBarContainer extends Container {
                     rectWidth, 
                     rectHeight
                 )
-                .fill(0xffff00 - i*0x001100);
+                .fill({ color: 0xffff00 - i*0x001100 });
         }
         return rect;
     }

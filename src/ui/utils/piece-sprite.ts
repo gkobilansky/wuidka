@@ -86,7 +86,7 @@ function createFallbackSprite(tier: TierConfig, radius: number): PixiSprite {
   if (!texture) {
     const graphics = new PixiGraphics();
     graphics.circle(0, 0, radius);
-    graphics.fill(tier.color);
+    graphics.fill({ color: tier.color });
 
     const renderer = Manager.app?.renderer;
     if (!renderer) {

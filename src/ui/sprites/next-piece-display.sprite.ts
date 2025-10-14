@@ -40,7 +40,7 @@ export class NextPieceDisplaySprite extends PixiContainer {
         this.background = new PixiGraphics();
         this.background
             .roundRect(0, 0, this.config.width!, this.config.height!, 8)
-            .fill(this.config.backgroundColor!)
+            .fill({ color: this.config.backgroundColor! })
             .stroke({ width: 2, color: this.config.borderColor });
         this.addChild(this.background);
     }

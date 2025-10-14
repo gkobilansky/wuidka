@@ -66,7 +66,7 @@ export class ButtonSprite extends PixiContainer {
             
         this.background
             .roundRect(0, 0, this.config.width, this.config.height, 8)
-            .fill(bgColor)
+            .fill({ color: bgColor })
             .stroke({ width: 2, color: this.config.borderColor });
     }
     

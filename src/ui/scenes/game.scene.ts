@@ -78,7 +78,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         // Create interactive game board background
         this.gameBoard = new PixiGraphics();
         this.gameBoard.rect(0, 0, this.gameWidth, this.gameHeight);
-        this.gameBoard.fill(0x000000, 0.01); // Nearly transparent but interactive
+        this.gameBoard.fill({ color: 0x000000, alpha: 0.01 }); // Nearly transparent but interactive
         this.gameBoard.interactive = true;
         this.addChild(this.gameBoard);
         
@@ -104,7 +104,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         const floorY = this.gameHeight - floorThickness / 2;
         this.floorRect = new PixiGraphics();
         this.floorRect.rect(0, floorY - floorThickness / 2, this.gameWidth, floorThickness);
-        this.floorRect.fill(0x8B4513); // Brown color for floor
+        this.floorRect.fill({ color: 0x8B4513 }); // Brown color for floor
         this.addChild(this.floorRect);
         
         // Ghost piece for aiming (positioned at top center)
@@ -198,7 +198,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.dangerLine.clear?.();
         // Draw a thin red line across the board at dangerY
         this.dangerLine.rect(0, this.dangerY - 1, this.gameWidth, 2);
-        this.dangerLine.fill(0xff4d4d);
+        this.dangerLine.fill({ color: 0xff4d4d });
         this.dangerLine.alpha = visible ? 1 : 0;
     }
     
@@ -354,7 +354,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         const overlay = new PixiContainer();
         const bg = new PixiGraphics();
         bg.rect(0, 0, this.gameWidth, this.gameHeight);
-        bg.fill(0x000000);
+        bg.fill({ color: 0x000000 });
         bg.alpha = 0.5;
         overlay.addChild(bg);
 

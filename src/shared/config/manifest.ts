@@ -17,6 +17,15 @@ export const options: LoaderOptions = {
                     "ui-atlas-data": "atlases/ui.json"
                 }
             },
+            {
+                name: "effects",
+                assets: {
+                    "cloud-transform-1": "cloud-transform/1.png",
+                    "cloud-transform-2": "cloud-transform/2.png",
+                    "cloud-transform-3": "cloud-transform/3.png",
+                    "cloud-transform-4": "cloud-transform/4.png"
+                }
+            },
             // {
             //     name: "audio",
             //     assets: {

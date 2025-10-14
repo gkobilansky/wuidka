@@ -1,4 +1,4 @@
-import { PixiContainer, PixiSprite, PixiText, PixiGraphics } from "../../plugins/engine";
+import { PixiContainer, PixiSprite, PixiText, PixiGraphics, PixiAnimatedSprite } from "../../plugins/engine";
 import { ButtonSprite, ScoreDisplaySprite } from "../sprites";
 import { Manager, SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
@@ -6,6 +6,7 @@ import { Spawner } from "../../systems/spawner";
 import { MergeSystem } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
 import { createPieceSprite } from "../utils/piece-sprite";
+import { createCloudTransformEffect } from "../utils/cloud-transform-effect";
 
 export class GameScene extends PixiContainer implements SceneInterface {
     private physicsWorld!: PhysicsWorld;
@@ -34,6 +35,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     
     // Piece tracking
     private pieceSprites: Map<string, PixiSprite> = new Map();
+    private mergeEffects: PixiAnimatedSprite[] = [];
 
     constructor() {
         super();
@@ -226,11 +228,29 @@ export class GameScene extends PixiContainer implements SceneInterface {
         }
     }
     
-    private handleMergeComplete(_newPiece: GamePiece, _mergedTier: TierConfig, score: number, _multiplier: number): void {
+    private handleMergeComplete(newPiece: GamePiece, mergedTier: TierConfig, score: number, _multiplier: number): void {
         this.score += score;
         this.updateScoreDisplay();
         
-        // TODO: Add merge effects, particle systems, sound effects
+        this.spawnMergeEffect(newPiece, mergedTier);
+    }
+
+    private spawnMergeEffect(newPiece: GamePiece, previousTier: TierConfig): void {
+        const targetRadius = Math.max(previousTier.radius, newPiece.tier.radius);
+        const effect = createCloudTransformEffect(targetRadius * 2);
+        if (!effect) {
+            return;
+        }
+
+        effect.position.set(newPiece.body.position.x, newPiece.body.position.y);
+        effect.onComplete = () => {
+            this.removeChild(effect);
+            this.mergeEffects = this.mergeEffects.filter((entry) => entry !== effect);
+            effect.destroy();
+        };
+
+        this.addChild(effect);
+        this.mergeEffects.push(effect);
     }
     
     private updateScoreDisplay(): void {
@@ -503,6 +523,10 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Clean up sprites
         this.pieceSprites.clear();
+        for (const effect of this.mergeEffects) {
+            effect.destroy();
+        }
+        this.mergeEffects = [];
         
         super.destroy();
     }

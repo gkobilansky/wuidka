@@ -36,11 +36,10 @@ export interface GameConfig {
 }
 
 export const GAME_CONFIG: GameConfig = {
-  // Mobile-friendly resolution (narrower game board)
   width: 400,  
   height: 500,
   
-  // Physics settings from PRD
+  // Physics settings
   gravity: 1.6,
   restitution: 0.3, // moderate bounce
   friction: 0.05,
@@ -56,9 +55,9 @@ export const GAME_CONFIG: GameConfig = {
   mergeRestMs: 50, // ms to wait before confirming merge
   
   // Input rate limiting
-  dropRateLimit: 6, // 6 drops per 10 seconds initially
+  dropRateLimit: 10, // 10 drops per 10 seconds
   
-  // Tier system from PRD
+  // Tier system
   tiers: [
     {
       id: 1,

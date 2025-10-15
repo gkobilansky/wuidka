@@ -47,8 +47,9 @@ h1 {
 }
 
 #game-container {
-  width: 400px;
-  max-height: 500px;
+  width: var(--game-width-px, 400px);
+  height: var(--game-height-px, 500px);
+  /* max-width: 100%; */
   position: relative;
   border-radius: 16px;
   overflow: hidden;
@@ -148,6 +149,10 @@ h1 {
 
 /* Responsive: stack panel below game on small screens */
 @media (max-width: 768px) {
+  body {
+    padding: 1.5rem 1rem;
+  }
+
   #app {
     flex-direction: column;
     align-items: center;
@@ -158,15 +163,15 @@ h1 {
 
   #game-container {
     width: 100%;
-    max-width: 400px;
+    max-width: var(--game-width-px, 400px);
     height: auto;
-    aspect-ratio: 400 / 700;
+    aspect-ratio: var(--game-width, 400) / var(--game-height, 500);
     /* maintain game aspect when responsive */
   }
 
   #score-panel {
     width: 100%;
-    max-width: 400px;
+    max-width: var(--game-width-px, 400px);
     /* match game width */
     padding: 4px 0;
   }

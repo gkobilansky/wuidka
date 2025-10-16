@@ -27,7 +27,8 @@ const boostsrap = async () => {
     registerLayoutListeners();
 
     const canvas = document.getElementById("pixi-screen") as HTMLCanvasElement;
-    const resizeTo = window;
+    const gameContainer = document.getElementById('game-container');
+    const resizeTo = gameContainer ?? window;
     const resolution = window.devicePixelRatio || 1;
     const autoDensity = true;
     const backgroundColor = 'rgba(227, 255, 171, 1)';

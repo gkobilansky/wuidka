@@ -490,29 +490,23 @@ export class GameScene extends PixiContainer implements SceneInterface {
     }
 
     resize(parentWidth: number, parentHeight: number): void {
-        // Calculate padding for mobile-friendly layout
-        const minPadding = 40; // Minimum side padding
-        const bottomPadding = 120; // Extra space at bottom for UI
+        const safeParentWidth = Math.max(1, parentWidth);
+        const safeParentHeight = Math.max(1, parentHeight);
+
+        // Fit the game to the container bounds
+        const scaleX = safeParentWidth / this.gameWidth;
+        const scaleY = safeParentHeight / this.gameHeight;
+        const scale = Math.min(1, scaleX, scaleY);
+        const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
         
-        // Calculate available space accounting for padding
-        const availableWidth = parentWidth - (minPadding * 2);
-        const availableHeight = parentHeight - bottomPadding;
-        
-        // Scale the game to fit the available space while maintaining aspect ratio
-        const scaleX = availableWidth / this.gameWidth;
-        const scaleY = availableHeight / this.gameHeight;
-        const scale = Math.min(scaleX, scaleY);
-        
-        this.scale.set(scale);
-        
-        // Center the game horizontally, with some top padding
-        const scaledWidth = this.gameWidth * scale;
-        const topPadding = 20;
-        
-        this.position.set(
-            (parentWidth - scaledWidth) / 2,
-            topPadding
-        );
+        this.scale.set(safeScale);
+
+        const scaledWidth = this.gameWidth * safeScale;
+        const scaledHeight = this.gameHeight * safeScale;
+        const offsetX = (safeParentWidth - scaledWidth) / 2;
+        const offsetY = Math.max(0, (safeParentHeight - scaledHeight) / 2);
+
+        this.position.set(offsetX, offsetY);
     }
     
     destroy(): void {

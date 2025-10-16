@@ -6,15 +6,31 @@ export class ManagerImpl {
     private static _app?: ApplicationInterface = undefined;
     private static _currentScene?: SceneInterface = undefined;
 
+    private static get layoutBounds(): DOMRect | undefined {
+        const container = document.getElementById('game-container');
+        if (!container) {
+            return undefined;
+        }
+        return container.getBoundingClientRect();
+    }
+
     public static get app(): ApplicationInterface | undefined {
         return ManagerImpl._app;
     }
 
     public static get width() {
+        const bounds = ManagerImpl.layoutBounds;
+        if (bounds && bounds.width > 0) {
+            return bounds.width;
+        }
         return Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     }
 
     public static get height() {
+        const bounds = ManagerImpl.layoutBounds;
+        if (bounds && bounds.height > 0) {
+            return bounds.height;
+        }
         return Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
     }
 
@@ -33,6 +49,9 @@ export class ManagerImpl {
         // Add the new one
         ManagerImpl._currentScene = newScene;
         ManagerImpl._app?.stage?.addChild(ManagerImpl._currentScene);
+
+        // Ensure the newly mounted scene matches the current layout immediately.
+        ManagerImpl.resize();
     }
 
     private static update(framesPassed: number): void {

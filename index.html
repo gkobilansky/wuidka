@@ -8,13 +8,56 @@
   </head>
   <body>
     <div id="app">
+      <aside id="info-panel" aria-labelledby="info-panel-title">
+        <button type="button" class="info-panel__close" aria-label="Close Wuidka info">&times;</button>
+        <header class="info-panel__header">
+          <h1 id="info-panel-title">Wuidka</h1>
+        </header>
+        <div class="info-panel__body">
+          <p>
+            Wuidka is a gravity-fed merge puzzler where every drop stacks friendly seeds inside a bright glass grow tower.
+          </p>
+          <p>
+            Guide each piece into gentle collisions to fuse matching tiers and climb the ladder toward the legendary Nova bloom.
+          </p>
+          <p>
+            You win by forging a Nova before the bucket overflows—survive the cascade and chase record-setting harvest scores.
+          </p>
+        </div>
+        <form class="info-panel__form" aria-label="Email signup for prizes and updates">
+          <label class="sr-only" for="info-email">Email address</label>
+          <div class="info-panel__form-row">
+            <input
+              type="email"
+              id="info-email"
+              name="info-email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+            <button type="submit">Notify Me</button>
+          </div>
+          <p class="info-panel__form-hint">Get prize drops, beta invites, and update notes in your inbox.</p>
+        </form>
+      </aside>
       <div id="game-container">
+        <button
+          id="info-toggle"
+          class="info-toggle"
+          type="button"
+          aria-controls="info-panel"
+          aria-expanded="false"
+          aria-label="Open Wuidka info"
+        >
+          i
+        </button>
         <canvas id="pixi-screen"></canvas>
       </div>
       <aside id="score-panel" aria-label="Scoring table">
         <div id="score-list"></div>
       </aside>
     </div>
+    <div id="info-backdrop" class="info-backdrop" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -9,6 +9,7 @@ import { LoaderScene } from './ui/scenes/loader.scene';
 import { GameScene } from './ui/scenes/game.scene';
 import { ScorePanelComponent } from './ui/components/score-panel.component';
 import { GAME_CONFIG } from './shared/config/game-config';
+import { AudioManager } from './shared/audio/audio-manager';
 
 const INFO_MODAL_BREAKPOINT = '(max-width: 768px)';
 
@@ -143,10 +144,39 @@ const setupInfoPanel = () => {
     }
 };
 
+const setupSoundToggle = () => {
+    const toggle = document.getElementById('sound-toggle') as HTMLButtonElement | null;
+    if (!toggle) {
+        return;
+    }
+
+    const glyph = toggle.querySelector<HTMLElement>('.sound-toggle__glyph');
+
+    AudioManager.init();
+
+    const updateButtonState = (muted: boolean) => {
+        toggle.setAttribute('aria-pressed', muted ? 'true' : 'false');
+        toggle.dataset.state = muted ? 'muted' : 'unmuted';
+        toggle.title = muted ? 'Enable sound' : 'Mute sound';
+        if (glyph) {
+            glyph.textContent = muted ? '🔇' : '🔊';
+        }
+    };
+
+    updateButtonState(AudioManager.isMuted());
+
+    toggle.addEventListener('click', () => {
+        const nextMuted = !AudioManager.isMuted();
+        AudioManager.setMuted(nextMuted);
+        updateButtonState(nextMuted);
+    });
+};
+
 const boostsrap = async () => {
     applyLayoutSettings();
     registerLayoutListeners();
     setupInfoPanel();
+    setupSoundToggle();
 
     const canvas = document.getElementById("pixi-screen") as HTMLCanvasElement;
     const gameContainer = document.getElementById('game-container');

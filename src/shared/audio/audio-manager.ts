@@ -18,10 +18,56 @@ const DEFAULT_OPTIONS: PlayOptions = {
     volume: 0.7
 };
 
+const MUTE_STORAGE_KEY = 'wuidka:audio-muted';
+
+let preferenceLoaded = false;
+let muted = false;
+let initialized = false;
+
+const ensurePreferenceLoaded = (): void => {
+    if (preferenceLoaded) {
+        return;
+    }
+    preferenceLoaded = true;
+    if (typeof window === 'undefined') {
+        return;
+    }
+    try {
+        const storedValue = window.localStorage.getItem(MUTE_STORAGE_KEY);
+        muted = storedValue === 'true';
+    } catch (error) {
+        console.warn('[AudioManager] Unable to read mute preference', error);
+        muted = false;
+    }
+};
+
+const persistMutePreference = (value: boolean): void => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    try {
+        window.localStorage.setItem(MUTE_STORAGE_KEY, value ? 'true' : 'false');
+    } catch (error) {
+        console.warn('[AudioManager] Unable to store mute preference', error);
+    }
+};
+
+const applyMuteState = (): void => {
+    if (!initialized) {
+        return;
+    }
+    if (muted) {
+        sound.muteAll();
+        return;
+    }
+    sound.unmuteAll();
+};
+
 const exists = (id: AudioCueId): boolean => sound.exists(id);
 
 const play = (id: AudioCueId, options?: Partial<PlayOptions>) => {
-    if (!exists(id)) {
+    ensurePreferenceLoaded();
+    if (muted || !exists(id)) {
         return;
     }
     const merged: PlayOptions = { ...DEFAULT_OPTIONS, ...options };
@@ -30,11 +76,16 @@ const play = (id: AudioCueId, options?: Partial<PlayOptions>) => {
 
 export const AudioManager = {
     init(): void {
-        // Importing @pixi/sound registers the Pixi Assets middleware automatically.
-        // We ensure the library is ready by touching the shared context once.
-        if (!sound.context) {
-            void sound.init();
+        ensurePreferenceLoaded();
+        if (!initialized) {
+            // Importing @pixi/sound registers the Pixi Assets middleware automatically.
+            // We ensure the library is ready by touching the shared context once.
+            if (!sound.context) {
+                sound.init();
+            }
+            initialized = true;
         }
+        applyMuteState();
     },
 
     playMerge(tierId: number): void {
@@ -69,5 +120,28 @@ export const AudioManager = {
 
     playGameOver(): void {
         play('gameover-sfx', { volume: 0.6 });
+    },
+
+    isMuted(): boolean {
+        ensurePreferenceLoaded();
+        return muted;
+    },
+
+    setMuted(nextMuted: boolean): void {
+        ensurePreferenceLoaded();
+        if (muted === nextMuted) {
+            persistMutePreference(muted);
+            applyMuteState();
+            return;
+        }
+        muted = nextMuted;
+        persistMutePreference(muted);
+        applyMuteState();
+    },
+
+    toggleMuted(): boolean {
+        const nextMuted = !this.isMuted();
+        this.setMuted(nextMuted);
+        return nextMuted;
     }
 };

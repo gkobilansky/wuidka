@@ -7,7 +7,7 @@ A Suika-style 2D physics merge puzzle game built with PixiJS 8, TypeScript, and 
 ## Features
 
 :white_check_mark: **Physics-based gameplay** - Matter.js integration for realistic piece movement \
-:white_check_mark: **12-tier progression** - From Dot to Nova with exponential scoring \
+:white_check_mark: **11-tier progression** - From Greedy Seedy to Big Stoner with increasing scoring \
 :white_check_mark: **Combo system** - Chain merges within 2-second windows for bonus points \
 :white_check_mark: **Turn-based difficulty** - Progressive tier unlocking system \
 :white_check_mark: **Mobile-optimized** - Touch controls with portrait orientation \
@@ -77,11 +77,6 @@ $ npm run preview               # Preview production build locally
 ## Configuration
 
 Game parameters are centralized in `src/shared/config/game-config.ts`:
-
-- **Physics Settings** - Gravity (1.6), restitution (0.03), friction (0.05)
-- **Tier System** - 12 tiers from Dot to Nova with scaling radii and scores
-- **Timing Constants** - Merge delay (80ms), combo window (2000ms)
-- **Performance Limits** - Max bodies (120) for smooth gameplay
 
 ## Requirements
 

@@ -151,7 +151,7 @@ Assets should be placed in `public/` directory and referenced without the public
 
 This is a fully functional Suika-style merge puzzle game with:
 - **Physics Engine**: Matter.js with configurable gravity, restitution, and friction
-- **Tier System**: 12-tier progression from Dot to Nova with exponential scoring
+- **Tier System**: 11-tier progression from Greedy Seedy to Big Stoner with increasing scoring
 - **Merge Mechanics**: Same-tier collision detection with velocity/overlap confirmation
 - **Scoring**: Base points + combo multipliers (up to 1.5x) within 2-second windows
 - **Spawning**: Turn-based tier progression (tier 1 only for first 2 turns, then tiers 1-5 via bag randomization)

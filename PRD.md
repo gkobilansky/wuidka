@@ -70,21 +70,8 @@ Drop-and-merge puzzle game where similarly ranked pieces collide, combine, and e
 - Solver: fixed 60 Hz; render interpolated.
 - Max active bodies: 120 (older/small bodies auto-sleep; off-screen cull safety).
 
-### 6.5 Merge Ladder (MVP placeholder)
-| Tier | Name (placeholder) | Radius(px) | Points on Merge |
-|-----:|---------------------|-----------:|----------------:|
-| 1    | Dot                 | 20         | 2               |
-| 2    | Bead                | 26         | 5               |
-| 3    | Pebble              | 33         | 10              |
-| 4    | Marble              | 42         | 20              |
-| 5    | Orb                 | 54         | 35              |
-| 6    | Bubble              | 70         | 55              |
-| 7    | Moonlet             | 90         | 85              |
-| 8    | Planetseed          | 115        | 130             |
-| 9    | Small Planet        | 145        | 190             |
-| 10   | Giant Planet        | 180        | 270             |
-| 11   | Star                | 220        | 380             |
-| 12   | Nova (cap)          | 260        | 520             |
+### 6.5 Merge Ladder 
+Find it in game-config.ts as `GAME_CONFIG.tiers`.
 
 **Rule:** When two bodies of same tier collide and rest ≥ N ms (e.g., 60–100 ms) within overlap threshold, they merge into the next tier at the averaged position. Tier 12 cannot merge; large reward + celebratory effects.
 

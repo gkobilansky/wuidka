@@ -18,10 +18,10 @@
             Wuidka is a gravity-fed merge puzzler where every drop stacks friendly seeds inside a bright glass grow tower.
           </p>
           <p>
-            Guide each piece into gentle collisions to fuse matching tiers and climb the ladder toward the legendary Nova bloom.
+            Guide each piece into gentle collisions to fuse matching tiers and climb the ladder toward the legendary Big Stoner boss guy.
           </p>
           <p>
-            You win by forging a Nova before the bucket overflows—survive the cascade and chase record-setting harvest scores.
+            You win by forging a Big Stoner before the bucket overflows—survive the cascade and chase record-setting harvest scores.
           </p>
         </div>
         <form class="info-panel__form" aria-label="Email signup for prizes and updates">
@@ -41,16 +41,30 @@
         </form>
       </aside>
       <div id="game-container">
-        <button
-          id="info-toggle"
-          class="info-toggle"
-          type="button"
-          aria-controls="info-panel"
-          aria-expanded="false"
-          aria-label="Open Wuidka info"
-        >
-          i
-        </button>
+        <div class="game-controls" role="group" aria-label="Game controls">
+          <button
+            id="sound-toggle"
+            class="control-toggle sound-toggle"
+            type="button"
+            data-state="unmuted"
+            aria-pressed="false"
+            aria-label="Toggle game sound"
+            title="Mute sound"
+          >
+            <span class="sound-toggle__glyph" aria-hidden="true">🔊</span>
+            <span class="sr-only">Toggle sound</span>
+          </button>
+          <button
+            id="info-toggle"
+            class="control-toggle info-toggle"
+            type="button"
+            aria-controls="info-panel"
+            aria-expanded="false"
+            aria-label="Open Wuidka info"
+          >
+            i
+          </button>
+        </div>
         <canvas id="pixi-screen"></canvas>
       </div>
       <aside id="score-panel" aria-label="Scoring table">

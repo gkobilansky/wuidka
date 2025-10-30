@@ -5,12 +5,14 @@ type AudioCueId =
     | 'merge-small-sfx'
     | 'merge-medium-sfx'
     | 'merge-big-sfx'
+    | 'merge-xl-sfx'
     | 'combo-sfx'
     | 'danger-sfx'
     | 'gameover-sfx';
 
 const MERGE_SMALL_MAX_TIER = 4;
 const MERGE_MEDIUM_MAX_TIER = 8;
+const MERGE_BIG_MAX_TIER = 10;
 
 const DEFAULT_OPTIONS: PlayOptions = {
     volume: 0.7
@@ -46,7 +48,12 @@ export const AudioManager = {
             return;
         }
 
-        play('merge-big-sfx', { volume: 0.75 });
+        if (tierId <= MERGE_BIG_MAX_TIER) {
+            play('merge-big-sfx', { volume: 0.75 });
+            return;
+        }
+
+        play('merge-xl-sfx', { volume: 0.8 });
     },
 
     playCombo(count: number): void {

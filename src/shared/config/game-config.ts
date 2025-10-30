@@ -32,6 +32,7 @@ export interface GameConfig {
   dropRateLimit: number; // drops per 10 seconds
   
   // Tier system
+  allowedSpawnTierIds: number[];
   tiers: TierConfig[];
 }
 
@@ -41,13 +42,13 @@ export const GAME_CONFIG: GameConfig = {
   
   // Physics settings
   gravity: 1.6,
-  restitution: 0.3, // moderate bounce
+  restitution: 0.37, // moderate bounce
   friction: 0.05,
   airFriction: 0.02,
   maxBodies: 120,
   
   // Game mechanics
-  dangerLineY: 60, // pixels from top
+  dangerLineY: 50, // pixels from top
   dangerTurnLimit: 3, // turns a piece can remain in danger zone
   dangerFallVyThreshold: 0.5, // hide danger while pieces are falling faster than this vy
   dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
@@ -58,6 +59,7 @@ export const GAME_CONFIG: GameConfig = {
   dropRateLimit: 10, // 10 drops per 10 seconds
   
   // Tier system
+  allowedSpawnTierIds: [1, 2, 3, 4, 5, 6, 7],
   tiers: [
     {
       id: 1,

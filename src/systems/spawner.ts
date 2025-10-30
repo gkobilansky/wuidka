@@ -2,9 +2,13 @@ import { GAME_CONFIG, TierConfig, getTierById } from '../shared/config/game-conf
 
 export class BagRandomizer {
   private bag: number[] = [];
-  private readonly allowedTierIds = [1, 2, 3, 4, 5]; // Only tiers 1-5 can be spawned
+  private readonly allowedTierIds: number[];
   
   constructor() {
+    this.allowedTierIds = [...GAME_CONFIG.allowedSpawnTierIds];
+    if (this.allowedTierIds.length === 0) {
+      throw new Error('No allowed spawn tier IDs configured');
+    }
     this.refillBag();
   }
 
@@ -28,8 +32,7 @@ export class BagRandomizer {
   }
 
   public draw(turnCount: number = 0): number {
-    // For first 2 turns, only return tier 1
-    if (turnCount < 2) {
+    if (turnCount < 3) {
       return 1;
     }
     

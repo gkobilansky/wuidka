@@ -48,11 +48,11 @@ export const GAME_CONFIG: GameConfig = {
   
   // Game mechanics
   dangerLineY: 60, // pixels from top
-  dangerTurnLimit: 4, // turns a piece can remain in danger zone
+  dangerTurnLimit: 3, // turns a piece can remain in danger zone
   dangerFallVyThreshold: 0.5, // hide danger while pieces are falling faster than this vy
   dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
-  comboWindowMs: 2000, // 2 second combo window
-  mergeRestMs: 50, // ms to wait before confirming merge
+  comboWindowMs: 2500, // 2 second combo window
+  mergeRestMs: 25, // ms to wait before confirming merge
   
   // Input rate limiting
   dropRateLimit: 10, // 10 drops per 10 seconds
@@ -62,7 +62,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 1,
       name: "Greedy Seedy",
-      radius: 20,
+      radius: 16,
       points: 2,
       color: 0xff0000,
       frames: ["greedy-seedy", "greedy-seedy-1"]
@@ -70,7 +70,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 2,
       name: "Drip Drop",
-      radius: 26,
+      radius: 22,
       points: 4,
       color: 0xff8000,
       frames: ["drippy-drop", "drippy-drop-1"]
@@ -78,7 +78,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 3,
       name: "Leafy Green",
-      radius: 33,
+      radius: 28,
       points: 6,
       color: 0xffff00,
       frames: ["leafy-green", "leafy-green-1"]
@@ -86,7 +86,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 4,
       name: "Funny Sunny",
-      radius: 42,
+      radius: 33,
       points: 8,
       color: 0x80ff00,
       frames: ["funny-sunny", "funny-sunny-1"]
@@ -94,7 +94,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 5,
       name: "Buddy Bud",
-      radius: 54,
+      radius: 42,
       points: 10,
       color: 0x00ff00,
       frames: ["buddy-bud"]
@@ -110,7 +110,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 7,
       name: "Kief Kollection",
-      radius: 70,
+      radius: 62,
       points: 14,
       color: 0x00ffff,
       frames: ["kief-kollection"]
@@ -118,7 +118,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 8,
       name: "Falshy Hashy",
-      radius: 90,
+      radius: 70,
       points: 16,
       color: 0x0080ff,
       frames: ["flahsy-hashy"]
@@ -126,7 +126,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 9,
       name: "Gold Diamond",
-      radius: 115,
+      radius: 84,
       points: 18,
       color: 0x0000ff,
       frames: ["gold-diamond"]
@@ -134,7 +134,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 10,
       name: "Flaming Fire",
-      radius: 145,
+      radius: 105,
       points: 20,
       color: 0x8000ff,
       frames: ["flaming-fire"]
@@ -142,7 +142,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 11,
       name: "Big Stoner",
-      radius: 180,
+      radius: 125,
       points: 22,
       color: 0xff00ff,
       frames: ["big-stoner"],

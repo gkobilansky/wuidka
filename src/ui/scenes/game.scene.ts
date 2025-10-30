@@ -1,5 +1,5 @@
 import { PixiContainer, PixiSprite, PixiText, PixiGraphics, PixiAnimatedSprite } from "../../plugins/engine";
-import { ButtonSprite, ScoreDisplaySprite } from "../sprites";
+import { ScoreDisplaySprite } from "../sprites";
 import { Manager, SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
@@ -7,6 +7,8 @@ import { MergeSystem } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
 import { createPieceSprite } from "../utils/piece-sprite";
 import { createCloudTransformEffect } from "../utils/cloud-transform-effect";
+import { AudioManager } from "../../shared/audio/audio-manager";
+import { GameOverOverlayComponent } from "../components/game-over-overlay.component";
 
 export class GameScene extends PixiContainer implements SceneInterface {
     private physicsWorld!: PhysicsWorld;
@@ -26,6 +28,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private isGameOver: boolean = false;
     private dangerSuppressUntil: number = 0; // timestamp (ms) until which we hide danger line for new drops
     private scoreUiHeight: number = 44; // mirrors ScoreDisplay config height
+    private isDangerActive: boolean = false;
     
     // Game state
     private score: number = 0;
@@ -36,11 +39,13 @@ export class GameScene extends PixiContainer implements SceneInterface {
     // Piece tracking
     private pieceSprites: Map<string, PixiSprite> = new Map();
     private mergeEffects: PixiAnimatedSprite[] = [];
+    private gameOverOverlay?: GameOverOverlayComponent;
 
     constructor() {
         super();
         this.position.x = 0;
         this.position.y = 0;
+        AudioManager.init();
         
         // Use game config dimensions
         this.gameWidth = GAME_CONFIG.width;
@@ -88,9 +93,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.scoreDisplay = new ScoreDisplaySprite({ width: 180, height: 44, fontSize: 40, textColor: 0x60a5fa });
         this.scoreDisplay.position.set(12, 12);
         this.addChild(this.scoreDisplay);
-        
-        // Static combo display removed; we now spawn floating notifications on combo
-        
+                
         // Compute dynamic danger Y just below score (fallback to config)
         const belowScoreY = (this.scoreDisplay?.position.y || 0) + this.scoreUiHeight + 8;
         // Use whichever is lower on the screen (greater Y) to ensure it's under the UI
@@ -231,6 +234,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private handleMergeComplete(newPiece: GamePiece, mergedTier: TierConfig, score: number, _multiplier: number): void {
         this.score += score;
         this.updateScoreDisplay();
+        AudioManager.playMerge(mergedTier.id);
         
         this.spawnMergeEffect(newPiece, mergedTier);
     }
@@ -262,6 +266,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private updateComboDisplay(count: number, _multiplier: number): void {
         // Spawn a floating, red combo notification on the right side
         if (count > 1) {
+            AudioManager.playCombo(count);
             this.spawnComboNotification(count, _multiplier);
         }
     }
@@ -338,6 +343,10 @@ export class GameScene extends PixiContainer implements SceneInterface {
         const anyTracked = this.inDangerByPiece.size > 0;
         const suppressionElapsed = Date.now() >= this.dangerSuppressUntil;
         const show = anyTracked || (suppressionElapsed && inZone.size > 0);
+        if (!this.isDangerActive && show && suppressionElapsed) {
+            AudioManager.playDanger();
+        }
+        this.isDangerActive = show;
         this.drawDangerLine(show);
     }
 
@@ -366,80 +375,21 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private endGame(): void {
         if (this.isGameOver) return;
         this.isGameOver = true;
+        AudioManager.playGameOver();
         // Pause physics
         this.physicsWorld.pause();
         // Disable interactions
         this.gameBoard.interactive = false;
         // Show overlay
-        const overlay = new PixiContainer();
-        overlay.interactive = true;
-
-        const bg = new PixiGraphics();
-        bg.rect(0, 0, this.gameWidth, this.gameHeight);
-        bg.fill({ color: 0x000000 });
-        bg.alpha = 0.5;
-        overlay.addChild(bg);
-
-        const text = new PixiText({
-            text: 'Game Over',
-            style: {
-                fontFamily: 'Arial',
-                fontSize: 48,
-                fill: 0xffffff,
-                fontWeight: '900',
-                align: 'center',
-                stroke: { color: 0x000000, width: 4 },
-                dropShadow: {
-                    color: 0x000000,
-                    blur: 2,
-                    distance: 2,
-                    alpha: 1
-                }
+        this.gameOverOverlay = new GameOverOverlayComponent({
+            width: this.gameWidth,
+            height: this.gameHeight,
+            score: this.score,
+            onRestart: () => {
+                Manager.changeScene(new GameScene());
             }
         });
-        text.anchor.set(0.5);
-        text.position.set(this.gameWidth / 2, this.gameHeight / 2 - 40);
-        overlay.addChild(text);
-
-        const scoreText = new PixiText({
-            text: `Score: ${this.score}`,
-            style: {
-                fontFamily: 'Arial',
-                fontSize: 28,
-                fill: 0xffffff,
-                fontWeight: '700',
-                align: 'center',
-                stroke: { color: 0x000000, width: 3 },
-                dropShadow: {
-                    color: 0x000000,
-                    blur: 2,
-                    distance: 2,
-                    alpha: 1
-                }
-            }
-        });
-        scoreText.anchor.set(0.5);
-        scoreText.position.set(this.gameWidth / 2, text.position.y + 56);
-        overlay.addChild(scoreText);
-
-        const buttonWidth = 200;
-        const buttonHeight = 52;
-        const restartButton = new ButtonSprite({
-            text: 'Start Over',
-            width: buttonWidth,
-            height: buttonHeight,
-            backgroundColor: 0x3b82f6,
-            borderColor: 0x1d4ed8,
-            textColor: 0xffffff,
-            fontSize: 20
-        });
-        restartButton.position.set((this.gameWidth - buttonWidth) / 2, scoreText.position.y + 40);
-        restartButton.on('pointertap', () => {
-            Manager.changeScene(new GameScene());
-        });
-        overlay.addChild(restartButton);
-
-        this.addChild(overlay);
+        this.addChild(this.gameOverOverlay);
     }
 
     update(framesPassed: number): void {
@@ -521,7 +471,12 @@ export class GameScene extends PixiContainer implements SceneInterface {
             effect.destroy();
         }
         this.mergeEffects = [];
-        
+        if (this.gameOverOverlay) {
+            this.removeChild(this.gameOverOverlay);
+            this.gameOverOverlay.destroy();
+            this.gameOverOverlay = undefined;
+        }
+
         super.destroy();
     }
 }

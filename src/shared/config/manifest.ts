@@ -26,19 +26,16 @@ export const options: LoaderOptions = {
                     "cloud-transform-4": "cloud-transform/4.png"
                 }
             },
-            // {
-            //     name: "audio",
-            //     assets: {
-            //         "drop-sfx": "audio/drop.wav",
-            //         "merge-small-sfx": "audio/merge-small.wav",
-            //         "merge-medium-sfx": "audio/merge-medium.wav",
-            //         "merge-big-sfx": "audio/merge-big.wav",
-            //         "combo-sfx": "audio/combo.wav",
-            //         "danger-sfx": "audio/danger.wav",
-            //         "gameover-sfx": "audio/gameover.wav",
-            //         "background-music": "audio/background-loop.ogg"
-            //     }
-            // }
+            {
+                name: "audio",
+                assets: {
+                    "merge-small-sfx": "sound/merge-small.wav",
+                    "merge-medium-sfx": "sound/merge-medium.wav",
+                    "merge-big-sfx": "sound/merge-large.wav",
+                    "combo-sfx": "sound/combo.wav",
+                    "danger-sfx": "sound/danger.wav"
+                }
+            }
         ]
     }
 }

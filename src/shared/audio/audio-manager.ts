@@ -23,6 +23,81 @@ const MUTE_STORAGE_KEY = 'wuidka:audio-muted';
 let preferenceLoaded = false;
 let muted = false;
 let initialized = false;
+let unlockListenersBound = false;
+let unlocked = false;
+
+const unlockEvents: Array<keyof WindowEventMap> = ['pointerdown', 'touchend', 'mousedown'];
+
+const getAudioContext = (): AudioContext | null => {
+    const context = sound.context as unknown as { audioContext?: AudioContext } | undefined;
+    if (!context) {
+        return null;
+    }
+    if (context.audioContext) {
+        return context.audioContext;
+    }
+    const maybeInternal = context as Record<string, unknown>;
+    if ('_ctx' in maybeInternal) {
+        return maybeInternal._ctx as AudioContext;
+    }
+    return null;
+};
+
+const removeUnlockListeners = () => {
+    if (!unlockListenersBound || typeof window === 'undefined') {
+        return;
+    }
+    unlockListenersBound = false;
+    unlockEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, handleUnlock, false);
+    });
+};
+
+const bindUnlockListeners = () => {
+    if (unlockListenersBound || unlocked || typeof window === 'undefined') {
+        return;
+    }
+    unlockListenersBound = true;
+    unlockEvents.forEach((eventName) => {
+        window.addEventListener(eventName, handleUnlock, { passive: true });
+    });
+};
+
+const handleUnlock = async () => {
+    if (!initialized) {
+        return;
+    }
+
+    const audioContext = getAudioContext();
+    if (!audioContext) {
+        unlocked = true;
+        removeUnlockListeners();
+        return;
+    }
+
+    const stateBefore = audioContext.state as string;
+    if (stateBefore === 'suspended' || stateBefore === 'interrupted') {
+        try {
+            await audioContext.resume();
+        } catch (error) {
+            console.warn('[AudioManager] Unable to resume audio context', error);
+        }
+    }
+
+    try {
+        sound.resumeAll();
+    } catch (error) {
+        console.warn('[AudioManager] Unable to resume sounds', error);
+    }
+
+    applyMuteState();
+
+    const currentState = audioContext.state as string;
+    if (currentState === 'running' || currentState === 'closed') {
+        unlocked = true;
+        removeUnlockListeners();
+    }
+};
 
 const ensurePreferenceLoaded = (): void => {
     if (preferenceLoaded) {
@@ -76,7 +151,7 @@ const play = (id: AudioCueId, options?: Partial<PlayOptions>) => {
 
 export const AudioManager = {
     init(): void {
-        ensurePreferenceLoaded();
+    ensurePreferenceLoaded();
         if (!initialized) {
             // Importing @pixi/sound registers the Pixi Assets middleware automatically.
             // We ensure the library is ready by touching the shared context once.
@@ -85,6 +160,7 @@ export const AudioManager = {
             }
             initialized = true;
         }
+        bindUnlockListeners();
         applyMuteState();
     },
 
@@ -143,5 +219,12 @@ export const AudioManager = {
         const nextMuted = !this.isMuted();
         this.setMuted(nextMuted);
         return nextMuted;
+    },
+
+    ensureUnlocked(): void {
+        if (unlocked) {
+            return;
+        }
+        bindUnlockListeners();
     }
 };

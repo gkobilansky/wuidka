@@ -59,7 +59,7 @@ export const GAME_CONFIG: GameConfig = {
   dropRateLimit: 10, // 10 drops per 10 seconds
   
   // Tier system
-  allowedSpawnTierIds: [1, 2, 3, 4, 5, 6, 7],
+  allowedSpawnTierIds: [1, 2, 3, 4, 5],
   tiers: [
     {
       id: 1,

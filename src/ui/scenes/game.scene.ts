@@ -8,7 +8,9 @@ import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
 import { createPieceSprite } from "../utils/piece-sprite";
 import { createCloudTransformEffect } from "../utils/cloud-transform-effect";
 import { AudioManager } from "../../shared/audio/audio-manager";
-import { GameOverOverlayComponent } from "../components/game-over-overlay.component";
+import { GameOverOverlayComponent, type ScoreSubmissionPayload, type ScoreSubmissionResult } from "../components/game-over-overlay.component";
+import { submitScore } from "../../api/scores-client";
+import { getLeaderboardPanel } from "../state/leaderboard-registry";
 
 export class GameScene extends PixiContainer implements SceneInterface {
     private physicsWorld!: PhysicsWorld;
@@ -40,6 +42,9 @@ export class GameScene extends PixiContainer implements SceneInterface {
     private pieceSprites: Map<string, PixiSprite> = new Map();
     private mergeEffects: PixiAnimatedSprite[] = [];
     private gameOverOverlay?: GameOverOverlayComponent;
+    private readonly handleScoreSubmission = (payload: ScoreSubmissionPayload, options?: { signal?: AbortSignal }): Promise<ScoreSubmissionResult> => {
+        return submitScore(payload, { signal: options?.signal });
+    };
 
     constructor() {
         super();
@@ -387,6 +392,10 @@ export class GameScene extends PixiContainer implements SceneInterface {
             score: this.score,
             onRestart: () => {
                 Manager.changeScene(new GameScene());
+            },
+            onSubmitScore: this.handleScoreSubmission,
+            onSubmissionSuccess: (result, payload) => {
+                this.handleSubmissionSuccess(result, payload);
             }
         });
         this.addChild(this.gameOverOverlay);
@@ -478,5 +487,16 @@ export class GameScene extends PixiContainer implements SceneInterface {
         }
 
         super.destroy();
+    }
+
+    private handleSubmissionSuccess(_result: ScoreSubmissionResult, payload: ScoreSubmissionPayload): void {
+        const leaderboard = getLeaderboardPanel();
+        if (!leaderboard) {
+            return;
+        }
+        leaderboard.setHighlightNickname(payload.nickname);
+        leaderboard.refresh().catch((error) => {
+            console.error('Failed to refresh leaderboard', error);
+        });
     }
 }

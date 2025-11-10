@@ -6,7 +6,7 @@ export class ScorePanelComponent {
     private readonly listId: string;
     private readonly bitmapDataUrlCache = new WeakMap<object, string>();
 
-    constructor(listId: string = 'score-list') {
+    constructor(listId: string = 'friends-panel') {
         this.listId = listId;
     }
 
@@ -17,10 +17,22 @@ export class ScorePanelComponent {
         const spritesheet = PixiAssets.get('pieces-atlas-data') as Spritesheet | undefined;
         list.innerHTML = '';
 
-        // Add header
-        const header = document.createElement('h2');
-        header.textContent = 'Friends';
+        const header = document.createElement('div');
+        header.className = 'friends-panel__header';
+
+        const title = document.createElement('h2');
+        title.textContent = 'Friends';
+        header.appendChild(title);
+
+        const description = document.createElement('p');
+        description.className = 'friends-panel__description';
+        header.appendChild(description);
+
         list.appendChild(header);
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'friends-panel__items';
+        list.appendChild(itemsContainer);
 
         for (const tier of GAME_CONFIG.tiers) {
             const item = document.createElement('div');
@@ -45,7 +57,7 @@ export class ScorePanelComponent {
             value.textContent = `${tier.points}`;
             item.appendChild(value);
 
-            list.appendChild(item);
+            itemsContainer.appendChild(item);
 
             const texture = this.pickTierTexture(spritesheet, tier);
             if (texture) {

@@ -111,15 +111,15 @@ export const GAME_CONFIG: GameConfig = {
     },
     {
       id: 7,
-      name: "Kief Kollection",
+      name: "Kief Collection",
       radius: 62,
       points: 14,
       color: 0x00ffff,
-      frames: ["kief-kollection"]
+      frames: ["jointy-jay"]
     },
     {
       id: 8,
-      name: "Falshy Hashy",
+      name: "Flashy Hashy",
       radius: 70,
       points: 16,
       color: 0x0080ff,

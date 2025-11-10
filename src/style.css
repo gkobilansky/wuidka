@@ -56,20 +56,32 @@ h1 {
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px 22px 20px;
+  gap: 0;
+  padding: 0;
   background: #fff5d9;
   color: #1f4a2a;
   border-radius: 18px;
   box-shadow: 0 12px 28px rgba(46, 53, 28, 0.18);
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-#info-panel h1 {
+.info-panel__banner {
+  width: 100%;
+  height: auto;
+  display: block;
   margin: 0;
-  font-size: 1.9rem;
-  letter-spacing: 0.02em;
+  border-radius: 18px 18px 0 0;
+  object-fit: cover;
+}
+
+.info-panel__content {
+  padding: 16px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 #info-panel p {

@@ -7,7 +7,7 @@ A Suika-style 2D physics merge puzzle game built with PixiJS 8, TypeScript, and 
 ## Features
 
 :white_check_mark: **Physics-based gameplay** - Matter.js integration for realistic piece movement \
-:white_check_mark: **11-tier progression** - From Greedy Seedy to Big Stoner with increasing scoring \
+:white_check_mark: **11-tier progression** - From Speedy Seedy to Big Stoner with increasing scoring \
 :white_check_mark: **Combo system** - Chain merges within 2-second windows for bonus points \
 :white_check_mark: **Turn-based difficulty** - Progressive tier unlocking system \
 :white_check_mark: **Mobile-optimized** - Touch controls with portrait orientation \
@@ -59,6 +59,37 @@ $ npm run dev -- --host         # Accessible from other devices (mobile testing)
 $ npm run build                  # Production build
 $ npm run preview               # Preview production build locally
 ```
+
+### Leaderboard Storage & API
+
+The weekly leaderboard uses **Vercel Postgres** via `@vercel/postgres`. To enable it locally:
+
+1. Run `vercel link` (if you haven't) and add a Postgres database from the Vercel dashboard.
+2. Pull the generated environment variables into a local file:  
+   ```bash
+   vercel env pull .env.local
+   ```
+3. Restart `npm run dev` so Vite picks up the connection string.
+
+The API needs these variables (Vercel manages them automatically when you add Postgres):
+
+- `POSTGRES_URL`
+- `POSTGRES_PRISMA_URL`
+- `POSTGRES_URL_NON_POOLING`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_HOST`
+- `POSTGRES_DATABASE`
+
+Serverless endpoints (available in `vercel dev`/deployed builds):
+
+| Method | Path                   | Description                                                                 |
+| ------ | ---------------------- | --------------------------------------------------------------------------- |
+| POST   | `/api/scores`          | Submit `{ nickname, score, email? }`, returns placement + stored entry.     |
+| GET    | `/api/leaderboard`     | Returns the top 5 scores for the current ISO week (UTC).                    |
+| GET    | `/api/leaderboard?week=YYYY-Www` | Fetch a specific ISO week (e.g., `2025-W02`) without exposing emails. |
+
+`POST /api/scores` enforces nickname (2–24 chars), non-negative integer scores, and optional valid emails. All responses are JSON and set `Cache-Control: no-store`.
 
 ## Technical Stack
 

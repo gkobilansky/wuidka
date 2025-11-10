@@ -8,8 +8,10 @@ import { options } from './shared/config/manifest';
 import { LoaderScene } from './ui/scenes/loader.scene';
 import { GameScene } from './ui/scenes/game.scene';
 import { ScorePanelComponent } from './ui/components/score-panel.component';
+import { LeaderboardPanelComponent } from './ui/components/leaderboard-panel.component';
 import { GAME_CONFIG } from './shared/config/game-config';
 import { AudioManager } from './shared/audio/audio-manager';
+import { registerLeaderboardPanel } from './ui/state/leaderboard-registry';
 
 const INFO_MODAL_BREAKPOINT = '(max-width: 768px)';
 
@@ -198,11 +200,16 @@ const boostsrap = async () => {
     Manager.init(application);
     const loader = new Loader(PixiAssets);
     const scorePanel = new ScorePanelComponent();
+    const leaderboardPanel = new LeaderboardPanelComponent();
+    registerLeaderboardPanel(leaderboardPanel);
     const loaderScene = new LoaderScene();
     Manager.changeScene(loaderScene);
     loader.download(options, loaderScene.progressCallback.bind(loaderScene)).then(() => {
         Manager.changeScene(new GameScene());
         scorePanel.render();
+        leaderboardPanel.render().catch((error) => {
+            console.error('Failed to render leaderboard panel', error);
+        });
     });
 }
 

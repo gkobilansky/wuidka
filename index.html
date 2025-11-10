@@ -15,14 +15,15 @@
         </header>
         <div class="info-panel__body">
           <p>
-            Wuidka is a gravity-fed merge puzzler where every drop stacks friendly seeds inside a bright glass grow tower.
+            Wuidka is a gravity-fed merge puzzler. Drop stacks of friendly seeds, water drops, sunshine and more inside a bright glass grow tower.
           </p>
           <p>
-            Guide each piece into gentle collisions to fuse matching tiers and climb the ladder toward the legendary Big Stoner boss guy.
+            Guide each piece into gentle collisions to fuse matching tiers and climb the ladder toward the legendary Big Stoner.
           </p>
           <p>
-            You win by forging a Big Stoner before the bucket overflows—survive the cascade and chase record-setting harvest scores.
+            Make combos, watch your garden grow and get the highest score you can before the tower overflows.
           </p>
+          <hr/>
         </div>
         <form class="info-panel__form" aria-label="Email signup for prizes and updates">
           <label class="sr-only" for="info-email">Email address</label>
@@ -35,7 +36,7 @@
               autocomplete="email"
               required
             />
-            <button type="submit">Notify Me</button>
+            <button type="submit">I'm in!</button>
           </div>
           <p class="info-panel__form-hint">Get prize drops, beta invites, and update notes in your inbox.</p>
         </form>
@@ -67,9 +68,13 @@
         </div>
         <canvas id="pixi-screen"></canvas>
       </div>
-      <aside id="score-panel" aria-label="Scoring table">
-        <div id="score-list"></div>
-      </aside>
+      <div id="sidebar-panels">
+        <aside id="leaderboard-panel" aria-live="polite">
+          <h2>Weekly Top 5</h2>
+          <div id="leaderboard-list" data-state="loading" aria-live="polite"></div>
+        </aside>
+        <section id="friends-panel" aria-label="Friends tier list"></section>
+      </div>
     </div>
     <div id="info-backdrop" class="info-backdrop" hidden></div>
     <script type="module" src="/src/main.ts"></script>

@@ -1,5 +1,15 @@
 import type { LoaderOptions } from "../../entities/loader";
 
+export const AUDIO_ASSET_URLS = {
+    "merge-small-sfx": "sound/merge-small.wav",
+    "merge-medium-sfx": "sound/merge-medium.wav",
+    "merge-big-sfx": "sound/merge-large.wav",
+    "merge-xl-sfx": "sound/merge-xl.wav",
+    "combo-sfx": "sound/combo.wav",
+    "danger-sfx": "sound/danger.wav",
+    "gameover-sfx": "sound/gameover.wav"
+} as const;
+
 export const options: LoaderOptions = {
     manifest: {
         bundles: [
@@ -28,14 +38,7 @@ export const options: LoaderOptions = {
             },
             {
                 name: "audio",
-                assets: {
-                    "merge-small-sfx": "sound/merge-small.wav",
-                    "merge-medium-sfx": "sound/merge-medium.wav",
-                    "merge-big-sfx": "sound/merge-large.wav",
-                    "merge-xl-sfx": "sound/merge-xl.wav",
-                    "combo-sfx": "sound/combo.wav",
-                    "danger-sfx": "sound/danger.wav"
-                }
+                assets: AUDIO_ASSET_URLS
             }
         ]
     }

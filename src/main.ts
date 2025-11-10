@@ -12,6 +12,7 @@ import { LeaderboardPanelComponent } from './ui/components/leaderboard-panel.com
 import { GAME_CONFIG } from './shared/config/game-config';
 import { AudioManager } from './shared/audio/audio-manager';
 import { registerLeaderboardPanel } from './ui/state/leaderboard-registry';
+import { submitUserContact } from './api/users-client';
 
 const INFO_MODAL_BREAKPOINT = '(max-width: 768px)';
 
@@ -139,9 +140,48 @@ const setupInfoPanel = () => {
     }
 
     if (emailForm) {
-        emailForm.addEventListener('submit', (event) => {
+        const emailInput = emailForm.querySelector<HTMLInputElement>('#info-email');
+        const submitButton = emailForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+        const statusElement = panel.querySelector<HTMLElement>('.info-panel__form-status');
+
+        const setStatus = (message: string, state: 'idle' | 'pending' | 'success' | 'error') => {
+            if (!statusElement) {
+                return;
+            }
+            statusElement.textContent = message;
+            statusElement.dataset.state = state;
+        };
+
+        let isSubmitting = false;
+
+        emailForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-            emailForm.reset();
+            if (isSubmitting) {
+                return;
+            }
+
+            const emailValue = emailInput?.value.trim() ?? '';
+            if (!emailValue) {
+                setStatus('Please enter a valid email.', 'error');
+                emailInput?.focus();
+                return;
+            }
+
+            isSubmitting = true;
+            submitButton && (submitButton.disabled = true);
+            setStatus('Saving...', 'pending');
+
+            try {
+                await submitUserContact({ email: emailValue });
+                setStatus('Thanks! You are on the list. 🌱', 'success');
+                emailForm.reset();
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to save email.';
+                setStatus(message, 'error');
+            } finally {
+                isSubmitting = false;
+                submitButton && (submitButton.disabled = false);
+            }
         });
     }
 };

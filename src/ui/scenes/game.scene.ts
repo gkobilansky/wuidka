@@ -5,7 +5,7 @@ import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
 import { MergeSystem } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
-import { createPieceSprite } from "../utils/piece-sprite";
+import { createPieceSprite, setPieceSpriteMovementState } from "../utils/piece-sprite";
 import { createCloudTransformEffect } from "../utils/cloud-transform-effect";
 import { AudioManager } from "../../shared/audio/audio-manager";
 import { GameOverOverlayComponent, type ScoreSubmissionPayload, type ScoreSubmissionResult } from "../components/game-over-overlay.component";
@@ -41,6 +41,9 @@ export class GameScene extends PixiContainer implements SceneInterface {
     // Piece tracking
     private pieceSprites: Map<string, PixiSprite> = new Map();
     private mergeEffects: PixiAnimatedSprite[] = [];
+    private pieceMotionState: Map<string, boolean> = new Map();
+    private readonly motionVerticalThreshold: number = 0.35;
+    private readonly motionSpeedThreshold: number = 0.55;
     private gameOverOverlay?: GameOverOverlayComponent;
     private readonly handleScoreSubmission = (payload: ScoreSubmissionPayload, options?: { signal?: AbortSignal }): Promise<ScoreSubmissionResult> => {
         return submitScore(payload, { signal: options?.signal });
@@ -226,6 +229,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         sprite.position.set(piece.body.position.x, piece.body.position.y);
         this.addChild(sprite);
         this.pieceSprites.set(piece.id, sprite);
+        this.applyPieceMotionState(piece, sprite);
     }
     
     private removePieceSprite(piece: GamePiece): void {
@@ -234,6 +238,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
             this.removeChild(sprite);
             this.pieceSprites.delete(piece.id);
         }
+        this.pieceMotionState.delete(piece.id);
     }
     
     private handleMergeComplete(newPiece: GamePiece, mergedTier: TierConfig, score: number, _multiplier: number): void {
@@ -318,8 +323,36 @@ export class GameScene extends PixiContainer implements SceneInterface {
             if (piece) {
                 sprite.position.set(piece.body.position.x, piece.body.position.y);
                 sprite.rotation = piece.body.angle;
+                this.applyPieceMotionState(piece, sprite);
             }
         }
+    }
+
+    private applyPieceMotionState(piece: GamePiece, sprite: PixiSprite): void {
+        const isMoving = this.isPieceInMotion(piece);
+        const previous = this.pieceMotionState.get(piece.id);
+        if (previous === isMoving) {
+            return;
+        }
+        this.pieceMotionState.set(piece.id, isMoving);
+        setPieceSpriteMovementState(sprite, isMoving);
+    }
+
+    private isPieceInMotion(piece: GamePiece): boolean {
+        const vy = piece.body.velocity?.y ?? 0;
+        const bodySpeed = typeof piece.body.speed === 'number'
+            ? piece.body.speed
+            : Math.hypot(piece.body.velocity?.x ?? 0, vy);
+
+        if (!Number.isFinite(vy) && !Number.isFinite(bodySpeed)) {
+            return false;
+        }
+
+        if (Math.abs(vy) > this.motionVerticalThreshold) {
+            return true;
+        }
+
+        return bodySpeed > this.motionSpeedThreshold;
     }
 
     private updateDangerState(): void {
@@ -476,6 +509,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         
         // Clean up sprites
         this.pieceSprites.clear();
+        this.pieceMotionState.clear();
         for (const effect of this.mergeEffects) {
             effect.destroy();
         }
@@ -489,11 +523,12 @@ export class GameScene extends PixiContainer implements SceneInterface {
         super.destroy();
     }
 
-    private handleSubmissionSuccess(_result: ScoreSubmissionResult, payload: ScoreSubmissionPayload): void {
+    private handleSubmissionSuccess(result: ScoreSubmissionResult, payload: ScoreSubmissionPayload): void {
         const leaderboard = getLeaderboardPanel();
         if (!leaderboard) {
             return;
         }
+        leaderboard.setHighlightUserId(result.entry.userId ?? null);
         leaderboard.setHighlightNickname(payload.nickname);
         leaderboard.refresh().catch((error) => {
             console.error('Failed to refresh leaderboard', error);

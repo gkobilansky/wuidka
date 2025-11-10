@@ -3,6 +3,7 @@ export interface LeaderboardEntry {
   nickname: string;
   score: number;
   createdAt: string;
+  userId: string | null;
 }
 
 export interface LeaderboardResponse {
@@ -59,7 +60,8 @@ export async function fetchLeaderboard(options: FetchLeaderboardOptions = {}): P
         rank: Number(entry?.rank ?? 0),
         nickname: String(entry?.nickname ?? 'Mystery Player'),
         score: Number(entry?.score ?? 0),
-        createdAt: String(entry?.createdAt ?? '')
+        createdAt: String(entry?.createdAt ?? ''),
+        userId: typeof entry?.userId === 'string' && entry.userId.length ? String(entry.userId) : null
       }))
     : [];
 

@@ -26,8 +26,18 @@ export async function ensureScoresTable(): Promise<void> {
     schemaPromise = (async () => {
       await sql`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`;
       await sql`
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          email TEXT UNIQUE,
+          nickname TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `;
+      await sql`
         CREATE TABLE IF NOT EXISTS scores (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE SET NULL,
           nickname TEXT NOT NULL,
           email TEXT,
           score INTEGER NOT NULL CHECK (score >= 0),
@@ -36,8 +46,30 @@ export async function ensureScoresTable(): Promise<void> {
         );
       `;
       await sql`
+        ALTER TABLE scores
+        ADD COLUMN IF NOT EXISTS user_id UUID;
+      `;
+      await sql`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'scores_user_id_fkey'
+          ) THEN
+            ALTER TABLE scores
+            ADD CONSTRAINT scores_user_id_fkey
+            FOREIGN KEY (user_id)
+            REFERENCES users(id)
+            ON DELETE SET NULL;
+          END IF;
+        END $$;
+      `;
+      await sql`
         CREATE INDEX IF NOT EXISTS scores_iso_week_score_idx
         ON scores (iso_week, score DESC, created_at ASC);
+      `;
+      await sql`
+        CREATE INDEX IF NOT EXISTS users_created_at_idx
+        ON users (created_at);
       `;
     })().catch((error) => {
       schemaPromise = null;
@@ -63,4 +95,12 @@ export function normalizeIsoWeekParam(value?: string | string[]): string | null 
     return null;
   }
   return ISO_WEEK_PATTERN.test(candidate) ? candidate : null;
+}
+
+export function normalizeEmail(value?: string | null): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized.length ? normalized : null;
 }

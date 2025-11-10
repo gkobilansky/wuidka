@@ -51,9 +51,9 @@ h1 {
 }
 
 #info-panel {
-  width: 300px;
-  max-width: 320px;
-  max-height: 85vh;
+  width: 360px;
+  max-width: 400px;
+  max-height: 95vh;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -185,6 +185,27 @@ hr {
   color: rgba(31, 74, 42, 0.75);
 }
 
+.info-panel__form-status {
+  min-height: 1.25em;
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(31, 74, 42, 0.65);
+}
+
+.info-panel__form-status[data-state='pending'] {
+  color: rgba(31, 74, 42, 0.8);
+}
+
+.info-panel__form-status[data-state='success'] {
+  color: #1f7a34;
+  font-weight: 600;
+}
+
+.info-panel__form-status[data-state='error'] {
+  color: #a22626;
+  font-weight: 600;
+}
+
 .info-panel__close {
   display: none;
   position: absolute;
@@ -198,6 +219,7 @@ hr {
   color: #1f4a2a;
   font-size: 1.2rem;
   line-height: 0;
+  padding: 0;
   cursor: pointer;
 }
 

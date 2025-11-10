@@ -7,6 +7,7 @@ interface LeaderboardRow {
   nickname: string;
   score: number;
   created_at: string;
+  user_id: string | null;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -25,10 +26,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     await ensureScoresTable();
 
     const result = await sql<LeaderboardRow>`
-      SELECT nickname, score, created_at
-      FROM scores
-      WHERE iso_week = ${isoWeek}
-      ORDER BY score DESC, created_at ASC
+      SELECT
+        COALESCE(u.nickname, s.nickname) AS nickname,
+        s.score,
+        s.created_at,
+        s.user_id
+      FROM scores s
+      LEFT JOIN users u ON u.id = s.user_id
+      WHERE s.iso_week = ${isoWeek}
+      ORDER BY s.score DESC, s.created_at ASC
       LIMIT 5;
     `;
 
@@ -38,7 +44,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         rank: index + 1,
         nickname: row.nickname,
         score: row.score,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        userId: row.user_id ?? null
       }))
     });
   } catch (error) {

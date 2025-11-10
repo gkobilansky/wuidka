@@ -9,6 +9,7 @@ export interface SubmitScoreResponse {
   isoWeek: string;
   entry: {
     id: string;
+    userId?: string | null;
     nickname: string;
     score: number;
     isoWeek: string;
@@ -80,12 +81,13 @@ export async function submitScore(
   return {
     placement: Number(body?.placement ?? 0),
     isoWeek: typeof body?.isoWeek === 'string' ? body.isoWeek : '',
-    entry: {
-      id: String(body?.entry?.id ?? ''),
-      nickname: String(body?.entry?.nickname ?? nickname),
-      score: Number(body?.entry?.score ?? payload.score),
-      isoWeek: typeof body?.entry?.isoWeek === 'string' ? body.entry.isoWeek : '',
-      createdAt: typeof body?.entry?.createdAt === 'string' ? body.entry.createdAt : ''
-    }
+      entry: {
+        id: String(body?.entry?.id ?? ''),
+        userId: typeof body?.entry?.userId === 'string' && body.entry.userId.length ? String(body.entry.userId) : null,
+        nickname: String(body?.entry?.nickname ?? nickname),
+        score: Number(body?.entry?.score ?? payload.score),
+        isoWeek: typeof body?.entry?.isoWeek === 'string' ? body.entry.isoWeek : '',
+        createdAt: typeof body?.entry?.createdAt === 'string' ? body.entry.createdAt : ''
+      }
   };
 }

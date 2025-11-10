@@ -3,11 +3,14 @@ import { fetchLeaderboard, type LeaderboardEntry } from '../../api/leaderboard-c
 interface LeaderboardPanelOptions {
   containerId?: string;
   highlightNickname?: string | null;
+  highlightUserId?: string | null;
 }
 
 export class LeaderboardPanelComponent {
   private readonly containerId: string;
   private highlightNickname: string | null;
+  private highlightNicknameNormalized: string | null;
+  private highlightUserId: string | null;
   private currentController: AbortController | null = null;
   private countdownElement: HTMLElement | null = null;
   private countdownTimerId: number | null = null;
@@ -15,6 +18,8 @@ export class LeaderboardPanelComponent {
   constructor(options: LeaderboardPanelOptions = {}) {
     this.containerId = options.containerId ?? 'leaderboard-list';
     this.highlightNickname = options.highlightNickname?.trim() ?? null;
+    this.highlightNicknameNormalized = this.highlightNickname?.toLowerCase() ?? null;
+    this.highlightUserId = options.highlightUserId?.trim() ?? null;
     if (typeof window !== 'undefined') {
       // Defer until next frame to ensure heading exists
       window.setTimeout(() => this.initCountdown(), 0);
@@ -23,6 +28,11 @@ export class LeaderboardPanelComponent {
 
   public setHighlightNickname(value: string | null): void {
     this.highlightNickname = value?.trim() || null;
+    this.highlightNicknameNormalized = this.highlightNickname?.toLowerCase() ?? null;
+  }
+
+  public setHighlightUserId(value: string | null): void {
+    this.highlightUserId = value?.trim() || null;
   }
 
   public async render(): Promise<void> {
@@ -102,7 +112,7 @@ export class LeaderboardPanelComponent {
       const item = document.createElement('div');
       item.className = 'leaderboard-item';
 
-      if (this.highlightNickname && this.shouldHighlight(entry.nickname)) {
+      if (this.shouldHighlight(entry)) {
         item.classList.add('is-highlighted');
       }
 
@@ -148,11 +158,14 @@ export class LeaderboardPanelComponent {
     container.appendChild(error);
   }
 
-  private shouldHighlight(nickname: string): boolean {
-    if (!this.highlightNickname) {
+  private shouldHighlight(entry: LeaderboardEntry): boolean {
+    if (this.highlightUserId && entry.userId && entry.userId === this.highlightUserId) {
+      return true;
+    }
+    if (!this.highlightNicknameNormalized) {
       return false;
     }
-    return nickname.trim().toLowerCase() === this.highlightNickname.trim().toLowerCase();
+    return entry.nickname.trim().toLowerCase() === this.highlightNicknameNormalized;
   }
 
   private formatScore(value: number): string {

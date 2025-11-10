@@ -48,6 +48,7 @@ describe('submitScore', () => {
       isoWeek: '2025-W07',
       entry: {
         id: 'abc',
+        userId: 'user-1',
         nickname: 'Tester',
         score: 1234,
         isoWeek: '2025-W07',

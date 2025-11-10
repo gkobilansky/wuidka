@@ -12,6 +12,7 @@ export interface ScoreSubmissionResult {
   isoWeek: string;
   entry: {
     id: string;
+    userId?: string | null;
     nickname: string;
     score: number;
     isoWeek: string;

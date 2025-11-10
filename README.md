@@ -88,6 +88,7 @@ Serverless endpoints (available in `vercel dev`/deployed builds):
 | POST   | `/api/scores`          | Submit `{ nickname, score, email? }`, returns placement + stored entry.     |
 | GET    | `/api/leaderboard`     | Returns the top 5 scores for the current ISO week (UTC).                    |
 | GET    | `/api/leaderboard?week=YYYY-Www` | Fetch a specific ISO week (e.g., `2025-W02`) without exposing emails. |
+| POST   | `/api/users`           | Register `{ email, nickname? }` for prize drops/updates.                    |
 
 `POST /api/scores` enforces nickname (2–24 chars), non-negative integer scores, and optional valid emails. All responses are JSON and set `Cache-Control: no-store`.
 

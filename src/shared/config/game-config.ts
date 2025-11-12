@@ -99,7 +99,7 @@ export const GAME_CONFIG: GameConfig = {
       radius: 42,
       points: 10,
       color: 0x00ff00,
-      frames: ["buddy-bud", "buddy-bud-1"]
+      frames: ["buddy-bud", "buddy-1"]
     },
     {
       id: 6,
@@ -111,10 +111,10 @@ export const GAME_CONFIG: GameConfig = {
     },
     {
       id: 7,
-      name: "Kief Collection",
+      name: "Jointy Jay",
       radius: 62,
       points: 14,
-      color: 0x00ffff,
+      color: 0xded9d0,
       frames: ["jointy-jay"]
     },
     {
@@ -123,12 +123,12 @@ export const GAME_CONFIG: GameConfig = {
       radius: 70,
       points: 16,
       color: 0x0080ff,
-      frames: ["flahsy-hashy"]
+      frames: ["flashy-hashy"]
     },
     {
       id: 9,
       name: "Gold Diamond",
-      radius: 84,
+      radius: 80,
       points: 18,
       color: 0x0000ff,
       frames: ["gold-diamond"]
@@ -136,7 +136,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 10,
       name: "Flaming Fire",
-      radius: 105,
+      radius: 95,
       points: 20,
       color: 0x8000ff,
       frames: ["flaming-fire"]
@@ -144,7 +144,7 @@ export const GAME_CONFIG: GameConfig = {
     {
       id: 11,
       name: "Big Stoner",
-      radius: 125,
+      radius: 115,
       points: 22,
       color: 0xff00ff,
       frames: ["big-stoner"],

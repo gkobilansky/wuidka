@@ -16,8 +16,8 @@ export const options: LoaderOptions = {
             {
                 name: "game-pieces",
                 assets: {
-                    "pieces-atlas": "atlases/pieces.png",
-                    "pieces-atlas-data": "atlases/pieces.json"
+                    "pieces-atlas": "atlases/wuidka-pieces/spritesheet.png",
+                    "pieces-atlas-data": "atlases/wuidka-pieces/spritesheet.json"
                 }
             },
             {

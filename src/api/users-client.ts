@@ -44,6 +44,9 @@ export async function submitUserContact(
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new Error('Offline — reconnect to share your email.');
+    }
     throw new Error('Unable to reach signup service');
   }
 

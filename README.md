@@ -60,6 +60,25 @@ $ npm run build                  # Production build
 $ npm run preview               # Preview production build locally
 ```
 
+## Offline / PWA
+
+- Always run `npm run build` before every push or pull request. It type-checks the project and generates the production service worker, so failures here catch SW regressions before review.
+
+### Local install & offline smoke test
+1. `npm run build && npm run preview -- --host`
+2. Visit the preview URL (default `http://localhost:4173`) in Chrome/Edge, open the install prompt (`+` icon or browser menu), and confirm the app installs.
+3. In DevTools, open **Application → Service Workers** and verify the `autoUpdate` service worker is registered without errors.
+4. Flip the **Network** tab to *Offline* and reload—Pixi boots from the precache while leaderboard/email submissions stay disabled with their inline “offline” copy until you reconnect.
+
+### Clearing cached builds
+- DevTools → Application → Storage → **Clear site data** removes cached assets and the service worker for the local origin.
+- Alternatively, DevTools → Application → Service Workers → **Unregister** clears only the worker so the next refresh grabs the newest files.
+- When validating on devices, use `npm run preview -- --host` so the scope matches the device hostname, then clear caches from the device browser’s site settings.
+
+### Known limitations
+- The game intentionally does not queue leaderboard/email submissions; those buttons remain disabled while offline and resume automatically once the browser reports an online state.
+- Background sync is not enabled—reopen the app after reconnecting to ensure the service worker pulls the latest leaderboard data.
+
 ### Leaderboard Storage & API
 
 The weekly leaderboard uses **Vercel Postgres** via `@vercel/postgres`. To enable it locally:

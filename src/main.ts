@@ -13,8 +13,12 @@ import { GAME_CONFIG } from './shared/config/game-config';
 import { AudioManager } from './shared/audio/audio-manager';
 import { registerLeaderboardPanel } from './ui/state/leaderboard-registry';
 import { submitUserContact } from './api/users-client';
+import { registerSW } from 'virtual:pwa-register';
+import { connectivityStore, ConnectivityState } from './shared/state/connectivity';
 
 const INFO_MODAL_BREAKPOINT = '(max-width: 768px)';
+
+connectivityStore.init();
 
 const applyLayoutSettings = () => {
     const root = document.documentElement;
@@ -144,19 +148,77 @@ const setupInfoPanel = () => {
         const submitButton = emailForm.querySelector<HTMLButtonElement>('button[type="submit"]');
         const statusElement = panel.querySelector<HTMLElement>('.info-panel__form-status');
 
-        const setStatus = (message: string, state: 'idle' | 'pending' | 'success' | 'error') => {
+        type FormStatusState = 'idle' | 'pending' | 'success' | 'error' | 'offline';
+        let statusSnapshotBeforeOffline: { text: string; state: FormStatusState } | null = null;
+
+        const setStatus = (message: string, state: FormStatusState) => {
             if (!statusElement) {
                 return;
             }
+            statusSnapshotBeforeOffline = null;
             statusElement.textContent = message;
             statusElement.dataset.state = state;
         };
 
+        const showOfflineStatus = () => {
+            if (!statusElement) {
+                return;
+            }
+            if (!statusSnapshotBeforeOffline) {
+                statusSnapshotBeforeOffline = {
+                    text: statusElement.textContent ?? '',
+                    state: (statusElement.dataset.state as FormStatusState) ?? 'idle'
+                };
+            }
+            statusElement.textContent = 'Offline — submissions resume once you reconnect.';
+            statusElement.dataset.state = 'offline';
+        };
+
+        const restoreOfflineStatus = () => {
+            if (!statusElement) {
+                return;
+            }
+            if (statusElement.dataset.state !== 'offline') {
+                statusSnapshotBeforeOffline = null;
+                return;
+            }
+            if (statusSnapshotBeforeOffline) {
+                statusElement.textContent = statusSnapshotBeforeOffline.text;
+                statusElement.dataset.state = statusSnapshotBeforeOffline.state;
+            } else {
+                statusElement.textContent = '';
+                statusElement.dataset.state = 'idle';
+            }
+            statusSnapshotBeforeOffline = null;
+        };
+
         let isSubmitting = false;
+        let isOnline = connectivityStore.isOnline();
+
+        const applyConnectivityState = (state: ConnectivityState) => {
+            isOnline = state.online;
+            const offline = !isOnline;
+            if (submitButton) {
+                submitButton.disabled = offline || isSubmitting;
+            }
+            if (offline) {
+                showOfflineStatus();
+            } else {
+                restoreOfflineStatus();
+            }
+        };
+
+        if (typeof window !== 'undefined') {
+            connectivityStore.subscribe(applyConnectivityState);
+        }
 
         emailForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             if (isSubmitting) {
+                return;
+            }
+            if (!isOnline) {
+                showOfflineStatus();
                 return;
             }
 
@@ -180,7 +242,9 @@ const setupInfoPanel = () => {
                 setStatus(message, 'error');
             } finally {
                 isSubmitting = false;
-                submitButton && (submitButton.disabled = false);
+                if (submitButton) {
+                    submitButton.disabled = !isOnline;
+                }
             }
         });
     }
@@ -253,4 +317,26 @@ const boostsrap = async () => {
     });
 }
 
-boostsrap();
+const registerServiceWorker = () =>
+    registerSW({
+        immediate: true,
+        onRegisteredSW(swUrl, registration) {
+            if (swUrl) {
+                console.info('PWA service worker registered', swUrl);
+            }
+            if (registration?.waiting) {
+                console.info('PWA service worker waiting to activate');
+            }
+        },
+        onRegisterError(error) {
+            console.error('PWA service worker registration failed', error);
+        }
+    });
+
+boostsrap()
+    .catch((error) => {
+        console.error('Failed to bootstrap application', error);
+    })
+    .finally(() => {
+        registerServiceWorker();
+    });

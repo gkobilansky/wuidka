@@ -1,4 +1,5 @@
 import { fetchLeaderboard, type LeaderboardEntry } from '../../api/leaderboard-client';
+import { connectivityStore, type ConnectivityState } from '../../shared/state/connectivity';
 
 interface LeaderboardPanelOptions {
   containerId?: string;
@@ -14,6 +15,8 @@ export class LeaderboardPanelComponent {
   private currentController: AbortController | null = null;
   private countdownElement: HTMLElement | null = null;
   private countdownTimerId: number | null = null;
+  private latestEntries: LeaderboardEntry[] = [];
+  private isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
 
   constructor(options: LeaderboardPanelOptions = {}) {
     this.containerId = options.containerId ?? 'leaderboard-list';
@@ -23,6 +26,8 @@ export class LeaderboardPanelComponent {
     if (typeof window !== 'undefined') {
       // Defer until next frame to ensure heading exists
       window.setTimeout(() => this.initCountdown(), 0);
+      this.isOnline = connectivityStore.isOnline();
+      connectivityStore.subscribe((state) => this.handleConnectivityChange(state));
     }
   }
 
@@ -42,6 +47,11 @@ export class LeaderboardPanelComponent {
   public async refresh(options: { week?: string } = {}): Promise<void> {
     const container = this.getContainer();
     if (!container) {
+      return;
+    }
+
+    if (!this.isOnline) {
+      this.renderOfflineNotice(container);
       return;
     }
 
@@ -100,6 +110,7 @@ export class LeaderboardPanelComponent {
   }
 
   private renderEntries(container: HTMLElement, entries: LeaderboardEntry[]): void {
+    this.latestEntries = entries;
     if (!entries?.length) {
       this.renderEmpty(container);
       return;
@@ -137,6 +148,7 @@ export class LeaderboardPanelComponent {
   }
 
   private renderEmpty(container: HTMLElement): void {
+    this.latestEntries = [];
     container.dataset.state = 'empty';
     container.innerHTML = '';
 
@@ -170,6 +182,33 @@ export class LeaderboardPanelComponent {
 
   private formatScore(value: number): string {
     return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(Math.max(0, value));
+  }
+
+  private renderOfflineNotice(container: HTMLElement): void {
+    this.abortInFlight();
+    container.innerHTML = '';
+    if (this.latestEntries.length) {
+      this.renderEntries(container, this.latestEntries);
+    }
+    container.dataset.state = 'offline';
+    const notice = document.createElement('div');
+    notice.className = 'leaderboard-offline-notice';
+    notice.setAttribute('role', 'status');
+    notice.textContent = 'Offline — leaderboard will refresh automatically when you reconnect.';
+    container.appendChild(notice);
+  }
+
+  private handleConnectivityChange(state: ConnectivityState): void {
+    this.isOnline = state.online;
+    const container = this.getContainer();
+    if (!container) {
+      return;
+    }
+    if (!this.isOnline) {
+      this.renderOfflineNotice(container);
+    } else {
+      this.refresh().catch((error) => console.error('Failed to refresh leaderboard after reconnect', error));
+    }
   }
 
   private initCountdown(): void {

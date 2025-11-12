@@ -40,6 +40,9 @@ export async function fetchLeaderboard(options: FetchLeaderboardOptions = {}): P
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new Error('Offline — leaderboard will refresh when you reconnect.');
+    }
     throw new Error('Unable to reach leaderboard service');
   }
 

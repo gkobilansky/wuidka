@@ -1,5 +1,6 @@
 import { PixiContainer, PixiGraphics, PixiText } from '../../plugins/engine';
 import { ButtonSprite } from '../sprites';
+import { connectivityStore, type ConnectivityState } from '../../shared/state/connectivity';
 
 export interface ScoreSubmissionPayload {
   nickname: string;
@@ -60,6 +61,10 @@ export class GameOverOverlayComponent extends PixiContainer {
   private statusText: HTMLParagraphElement | null = null;
   private submissionAbortController: AbortController | null = null;
   private dismissTimeoutId: number | null = null;
+  private connectivityUnsubscribe: (() => void) | null = null;
+  private isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
+  private offlineStatusSnapshot: { text: string; state: SubmissionState } | null = null;
+  private submissionState: SubmissionState = 'idle';
 
   private readonly handleRestart = () => {
     this.abortInFlight();
@@ -260,6 +265,8 @@ export class GameOverOverlayComponent extends PixiContainer {
     this.submitButton = submitButton;
     this.skipButton = skipButton;
     this.statusText = status;
+
+    this.connectivityUnsubscribe = connectivityStore.subscribe(this.handleConnectivityChange);
   }
 
   private teardownDomForm(): void {
@@ -274,6 +281,10 @@ export class GameOverOverlayComponent extends PixiContainer {
     if (this.skipButton) {
       this.skipButton.removeEventListener('click', this.handleSkipClick);
     }
+    if (this.connectivityUnsubscribe) {
+      this.connectivityUnsubscribe();
+      this.connectivityUnsubscribe = null;
+    }
     this.formHost?.remove();
     this.formHost = null;
     this.formElement = null;
@@ -287,6 +298,10 @@ export class GameOverOverlayComponent extends PixiContainer {
   private async submitScore(): Promise<void> {
     if (!this.options.onSubmitScore) {
       this.setSubmissionState('error', 'Score submission is currently unavailable.');
+      return;
+    }
+    if (!this.isOnline) {
+      this.showOfflineStatus();
       return;
     }
     const nickname = this.nicknameInput?.value.trim() ?? '';
@@ -332,17 +347,11 @@ export class GameOverOverlayComponent extends PixiContainer {
   }
 
   private setSubmissionState(state: SubmissionState, message?: string): void {
-    const isSubmitting = state === 'submitting';
+    this.submissionState = state;
+    this.offlineStatusSnapshot = null;
     const hasCompleted = state === 'success' || state === 'skipped';
 
-    if (this.submitButton) {
-      this.submitButton.disabled = isSubmitting || hasCompleted;
-    }
-    if (this.skipButton) {
-      this.skipButton.disabled = isSubmitting || state === 'success';
-    }
-    this.restartButton.setEnabled(!isSubmitting);
-
+    this.updateSubmitInteractivity();
     if (this.statusText) {
       this.statusText.textContent = message ?? '';
       this.statusText.dataset.state = state;
@@ -401,5 +410,65 @@ export class GameOverOverlayComponent extends PixiContainer {
     } catch {
       // ignore storage errors (e.g., private mode)
     }
+  }
+
+  private updateSubmitInteractivity(): void {
+    const isSubmitting = this.submissionState === 'submitting';
+    const hasCompleted = this.submissionState === 'success' || this.submissionState === 'skipped';
+    if (this.submitButton) {
+      this.submitButton.disabled = !this.isOnline || isSubmitting || hasCompleted;
+    }
+    if (this.skipButton) {
+      this.skipButton.disabled = isSubmitting || this.submissionState === 'success';
+    }
+    this.restartButton.setEnabled(!isSubmitting);
+  }
+
+  private readonly handleConnectivityChange = (state: ConnectivityState) => {
+    this.isOnline = state.online;
+    this.updateSubmitInteractivity();
+    if (!this.isOnline) {
+      this.showOfflineStatus();
+    } else {
+      this.restoreOfflineStatus();
+    }
+  };
+
+  private showOfflineStatus(): void {
+    if (!this.statusText) {
+      return;
+    }
+    if (this.submissionState === 'success' || this.submissionState === 'skipped') {
+      return;
+    }
+    if (!this.offlineStatusSnapshot) {
+      this.offlineStatusSnapshot = {
+        text: this.statusText.textContent ?? '',
+        state: (this.statusText.dataset.state as SubmissionState) ?? 'idle'
+      };
+    }
+    this.statusText.textContent = 'Offline — score submissions resume once you reconnect.';
+    this.statusText.dataset.state = 'offline';
+    if (this.submitButton) {
+      this.submitButton.disabled = true;
+    }
+  }
+
+  private restoreOfflineStatus(): void {
+    if (!this.statusText) {
+      return;
+    }
+    if (this.statusText.dataset.state !== 'offline') {
+      this.offlineStatusSnapshot = null;
+      return;
+    }
+    if (this.offlineStatusSnapshot) {
+      this.statusText.textContent = this.offlineStatusSnapshot.text;
+      this.statusText.dataset.state = this.offlineStatusSnapshot.state;
+    } else {
+      this.statusText.textContent = '';
+      this.statusText.dataset.state = this.submissionState;
+    }
+    this.offlineStatusSnapshot = null;
   }
 }

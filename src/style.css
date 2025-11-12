@@ -206,6 +206,11 @@ hr {
   font-weight: 600;
 }
 
+.info-panel__form-status[data-state='offline'] {
+  color: #92400e;
+  font-weight: 600;
+}
+
 .info-panel__close {
   display: none;
   position: absolute;
@@ -434,6 +439,11 @@ hr {
   color: #1f2937;
 }
 
+.game-over-form__status[data-state='offline'] {
+  color: #92400e;
+  font-weight: 600;
+}
+
 /* Layout: leaderboard + friends column */
 #sidebar-panels {
   display: flex;
@@ -605,6 +615,17 @@ hr {
   border: 1px dashed rgba(255, 255, 255, 0.15);
   text-align: center;
   font-size: 0.95rem;
+}
+
+.leaderboard-offline-notice {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .leaderboard-placeholder::after {

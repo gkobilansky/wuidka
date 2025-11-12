@@ -57,6 +57,9 @@ export async function submitScore(
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new Error('Offline — reconnect to submit your score.');
+    }
     throw new Error('Unable to reach score service');
   }
 

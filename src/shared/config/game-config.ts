@@ -99,7 +99,7 @@ export const GAME_CONFIG: GameConfig = {
       radius: 42,
       points: 10,
       color: 0x00ff00,
-      frames: ["buddy-bud"]
+      frames: ["buddy-bud", "buddy-bud-1"]
     },
     {
       id: 6,

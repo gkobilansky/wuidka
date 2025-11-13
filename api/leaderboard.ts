@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     sendJson(res, 200, {
       isoWeek,
-      entries: result.rows.map((row, index) => ({
+      entries: result.rows.map((row: LeaderboardRow, index: number) => ({
         rank: index + 1,
         nickname: row.nickname,
         score: row.score,

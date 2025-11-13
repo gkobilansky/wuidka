@@ -5,6 +5,7 @@ export const AUDIO_ASSET_URLS = {
     "merge-medium-sfx": "sound/merge-medium.wav",
     "merge-big-sfx": "sound/merge-large.wav",
     "merge-xl-sfx": "sound/merge-xl.wav",
+    "big-stoner-explosion-sfx": "sound/explosion.wav",
     "combo-sfx": "sound/combo.wav",
     "danger-sfx": "sound/danger.wav",
     "gameover-sfx": "sound/gameover.wav"

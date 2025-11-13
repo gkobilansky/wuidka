@@ -2,17 +2,27 @@ import { GamePiece, PhysicsWorld } from './physics-world';
 import { GAME_CONFIG, getNextTier, canMerge, TierConfig } from '../shared/config/game-config';
 import { Body } from 'matter-js';
 
+type MergeResolutionMode = 'standard' | 'big-stoner';
+
 interface MergeCandidate {
   piece1: GamePiece;
   piece2: GamePiece;
   timestamp: number;
   confirmed: boolean;
+  mode: MergeResolutionMode;
 }
 
 interface ComboState {
   count: number;
   lastMergeTime: number;
   multiplier: number;
+}
+
+export interface BigStonerClearEvent {
+  tier: TierConfig;
+  position: { x: number; y: number };
+  score: number;
+  comboMultiplier: number;
 }
 
 export class MergeSystem {
@@ -23,6 +33,7 @@ export class MergeSystem {
   // Callbacks
   public onMergeComplete?: (newPiece: GamePiece, mergedTier: TierConfig, score: number, comboMultiplier: number) => void;
   public onComboUpdate?: (comboCount: number, multiplier: number) => void;
+  public onBigStonerClear?: (event: BigStonerClearEvent) => void;
 
   constructor(physicsWorld: PhysicsWorld) {
     this.physicsWorld = physicsWorld;
@@ -36,9 +47,17 @@ export class MergeSystem {
   private handleCollision(piece1: GamePiece, piece2: GamePiece): void {
     // Only consider pieces of the same tier
     if (piece1.tier.id !== piece2.tier.id) return;
-    
-    // Don't merge pieces that are already capped (tier 12)
-    if (!canMerge(piece1.tier.id)) return;
+
+    const canStandardMerge = canMerge(piece1.tier.id);
+    let mode: MergeResolutionMode | undefined;
+
+    if (canStandardMerge) {
+      mode = 'standard';
+    } else if (this.shouldHandleBigStonerClear(piece1.tier.id)) {
+      mode = 'big-stoner';
+    } else {
+      return;
+    }
     
     console.log(`Collision detected: ${piece1.tier.name} (${piece1.id}) + ${piece2.tier.name} (${piece2.id})`);
     
@@ -56,11 +75,13 @@ export class MergeSystem {
       piece1,
       piece2,
       timestamp: Date.now(),
-      confirmed: false
+      confirmed: false,
+      mode
     };
     
     this.mergeCandidates.set(key, candidate);
-    console.log(`Merge candidate created for ${piece1.tier.name} pieces, waiting ${GAME_CONFIG.mergeRestMs}ms...`);
+    const label = mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+    console.log(`${label} candidate created for ${piece1.tier.name} pieces, waiting ${GAME_CONFIG.mergeRestMs}ms...`);
   }
 
   private createCollisionKey(id1: string, id2: string): string {
@@ -95,7 +116,7 @@ export class MergeSystem {
 
   public update(_deltaTime: number): void {
     const now = Date.now();
-    const candidatesToProcess: string[] = [];
+    const candidatesToProcess: Array<{ key: string; candidate: MergeCandidate }> = [];
     const candidatesToRemove: string[] = [];
 
     // Check all merge candidates
@@ -114,25 +135,28 @@ export class MergeSystem {
       
       if (timeWaiting >= GAME_CONFIG.mergeRestMs && !candidate.confirmed) {
         // Check if pieces are still close enough and moving slowly
-        if (this.canConfirmMerge(candidate.piece1, candidate.piece2)) {
-          console.log(`Merge confirmed for ${candidate.piece1.tier.name} pieces after ${timeWaiting}ms`);
+        if (this.canConfirmCandidate(candidate)) {
+          const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+          console.log(`${label} confirmed for ${candidate.piece1.tier.name} pieces after ${timeWaiting}ms`);
           candidate.confirmed = true;
-          candidatesToProcess.push(key);
+          candidatesToProcess.push({ key, candidate });
         } else {
           // Conditions no longer met, remove candidate
-          console.log(`Merge cancelled for ${candidate.piece1.tier.name} pieces - conditions not met`);
+          const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+          console.log(`${label} cancelled for ${candidate.piece1.tier.name} pieces - conditions not met`);
           candidatesToRemove.push(key);
         }
       }
     }
 
     // Process confirmed merges
-    for (const key of candidatesToProcess) {
-      const candidate = this.mergeCandidates.get(key);
-      if (candidate) {
+    for (const { key, candidate } of candidatesToProcess) {
+      if (candidate.mode === 'big-stoner') {
+        this.executeBigStonerDetonation(candidate);
+      } else {
         this.executeMerge(candidate);
-        candidatesToRemove.push(key);
       }
+      candidatesToRemove.push(key);
     }
 
     // Clean up processed/invalid candidates
@@ -174,7 +198,8 @@ export class MergeSystem {
     Body.applyForce(body2, body2.position, { x: -forceX, y: -forceY });
   }
 
-  private canConfirmMerge(piece1: GamePiece, piece2: GamePiece): boolean {
+  private canConfirmCandidate(candidate: MergeCandidate): boolean {
+    const { piece1, piece2 } = candidate;
     // Since we made pieces sticky on collision, they should always be ready to merge
     // Just check they still exist and are reasonably close
     const dx = piece1.body.position.x - piece2.body.position.x;
@@ -187,7 +212,8 @@ export class MergeSystem {
       return false;
     }
 
-    console.log(`Merge ready - distance: ${distance.toFixed(2)} (max: ${maxDistance.toFixed(2)})`);
+    const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+    console.log(`${label} ready - distance: ${distance.toFixed(2)} (max: ${maxDistance.toFixed(2)})`);
     return true;
   }
 
@@ -222,6 +248,35 @@ export class MergeSystem {
     if (this.onMergeComplete) {
       this.onMergeComplete(newPiece, piece1.tier, finalScore, this.comboState.multiplier);
     }
+  }
+
+  private executeBigStonerDetonation(candidate: MergeCandidate): void {
+    const { piece1, piece2 } = candidate;
+    const clearX = (piece1.body.position.x + piece2.body.position.x) / 2;
+    const clearY = (piece1.body.position.y + piece2.body.position.y) / 2;
+
+    console.log(`Executing Big Stoner clear at (${Math.round(clearX)}, ${Math.round(clearY)})`);
+
+    this.physicsWorld.removePiece(piece1.id);
+    this.physicsWorld.removePiece(piece2.id);
+
+    this.incrementCombo();
+
+    const baseScore = GAME_CONFIG.bigStonerClearScore;
+    const finalScore = Math.floor(baseScore * this.comboState.multiplier);
+
+    if (this.onBigStonerClear) {
+      this.onBigStonerClear({
+        tier: piece1.tier,
+        position: { x: clearX, y: clearY },
+        score: finalScore,
+        comboMultiplier: this.comboState.multiplier
+      });
+    }
+  }
+
+  private shouldHandleBigStonerClear(tierId: number): boolean {
+    return tierId === GAME_CONFIG.bigStonerTierId;
   }
 
   private incrementCombo(): void {

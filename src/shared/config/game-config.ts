@@ -27,6 +27,8 @@ export interface GameConfig {
   dangerSuppressMs: number; // hide danger line briefly after a drop
   comboWindowMs: number;
   mergeRestMs: number;
+  bigStonerTierId: number;
+  bigStonerClearScore: number;
   
   // Input settings
   dropRateLimit: number; // drops per 10 seconds
@@ -54,12 +56,14 @@ export const GAME_CONFIG: GameConfig = {
   dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
   comboWindowMs: 2500, // 2 second combo window
   mergeRestMs: 25, // ms to wait before confirming merge
+  bigStonerTierId: 11,
+  bigStonerClearScore: 420,
   
   // Input rate limiting
   dropRateLimit: 10, // 10 drops per 10 seconds
   
   // Tier system
-  allowedSpawnTierIds: [1, 2, 3, 4, 5],
+  allowedSpawnTierIds: [1,2,3,4,5],
   tiers: [
     {
       id: 1,

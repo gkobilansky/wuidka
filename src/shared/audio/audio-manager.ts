@@ -375,6 +375,10 @@ export const AudioManager = {
         play('merge-xl-sfx', { volume: 0.8 });
     },
 
+    playBigStonerBlast(): void {
+        play('big-stoner-explosion-sfx', { volume: 0.9 });
+    },
+
     playCombo(count: number): void {
         if (count < 2) {
             return;

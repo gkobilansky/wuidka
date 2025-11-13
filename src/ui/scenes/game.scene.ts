@@ -3,7 +3,7 @@ import { ScoreDisplaySprite } from "../sprites";
 import { Manager, SceneInterface } from "../../entities/manager";
 import { PhysicsWorld, GamePiece } from "../../systems/physics-world";
 import { Spawner } from "../../systems/spawner";
-import { MergeSystem } from "../../systems/merge-system";
+import { MergeSystem, type BigStonerClearEvent } from "../../systems/merge-system";
 import { GAME_CONFIG, TierConfig } from "../../shared/config/game-config";
 import { createPieceSprite, setPieceSpriteMovementState } from "../utils/piece-sprite";
 import { createCloudTransformEffect } from "../utils/cloud-transform-effect";
@@ -41,6 +41,9 @@ export class GameScene extends PixiContainer implements SceneInterface {
     // Piece tracking
     private pieceSprites: Map<string, PixiSprite> = new Map();
     private mergeEffects: PixiAnimatedSprite[] = [];
+    private bigStonerShockwaves: { node: PixiGraphics; life: number; initialLife: number; minScale: number; maxScale: number }[] = [];
+    private bigStonerCallouts: { node: PixiText; life: number; initialLife: number }[] = [];
+    private screenFlashes: { node: PixiGraphics; life: number; initialLife: number }[] = [];
     private pieceMotionState: Map<string, boolean> = new Map();
     private readonly motionVerticalThreshold: number = 0.35;
     private readonly motionSpeedThreshold: number = 0.55;
@@ -78,6 +81,9 @@ export class GameScene extends PixiContainer implements SceneInterface {
         };
         this.mergeSystem.onComboUpdate = (count, multiplier) => {
             this.updateComboDisplay(count, multiplier);
+        };
+        this.mergeSystem.onBigStonerClear = (event) => {
+            this.handleBigStonerClear(event);
         };
         
         // Set up physics callbacks
@@ -249,6 +255,17 @@ export class GameScene extends PixiContainer implements SceneInterface {
         this.spawnMergeEffect(newPiece, mergedTier);
     }
 
+    private handleBigStonerClear(event: BigStonerClearEvent): void {
+        this.score += event.score;
+        this.updateScoreDisplay();
+        AudioManager.playMerge(event.tier.id);
+        AudioManager.playBigStonerBlast();
+
+        this.spawnScreenFlash(0xfff4cf, 0.35);
+        this.spawnBigStonerClearEffect(event.position, event.tier);
+        this.spawnBigStonerCallout(event.position, event.tier, event.score, event.comboMultiplier);
+    }
+
     private spawnMergeEffect(newPiece: GamePiece, previousTier: TierConfig): void {
         const targetRadius = Math.max(previousTier.radius, newPiece.tier.radius);
         const effect = createCloudTransformEffect(targetRadius * 2);
@@ -265,6 +282,97 @@ export class GameScene extends PixiContainer implements SceneInterface {
 
         this.addChild(effect);
         this.mergeEffects.push(effect);
+    }
+
+    private spawnBigStonerClearEffect(position: { x: number; y: number }, tier: TierConfig): void {
+        const targetDiameter = tier.radius * 2 * 2.2;
+        const effect = createCloudTransformEffect(targetDiameter);
+        if (effect) {
+            effect.position.set(position.x, position.y);
+            effect.animationSpeed = 0.45;
+            effect.alpha = 0.95;
+            effect.tint = 0xfff2c0;
+            effect.onComplete = () => {
+                this.removeChild(effect);
+                this.mergeEffects = this.mergeEffects.filter((entry) => entry !== effect);
+                effect.destroy();
+            };
+            this.addChild(effect);
+            this.mergeEffects.push(effect);
+        }
+
+        const outerWave = new PixiGraphics();
+        outerWave.position.set(position.x, position.y);
+        outerWave.circle(0, 0, tier.radius * 1.2);
+        outerWave.stroke({ color: 0xfff8d1, width: 10, alpha: 1 });
+        outerWave.fill({ color: 0xffe5a7, alpha: 0.18 });
+        outerWave.scale.set(0.35);
+        this.addChild(outerWave);
+        this.trackBigStonerShockwave(outerWave, 0.9, 0.35, 2.8);
+
+        const innerBurst = new PixiGraphics();
+        innerBurst.position.set(position.x, position.y);
+        innerBurst.circle(0, 0, tier.radius * 0.65);
+        innerBurst.fill({ color: 0xffffff, alpha: 0.95 });
+        innerBurst.scale.set(0.1);
+        this.addChild(innerBurst);
+        this.trackBigStonerShockwave(innerBurst, 0.4, 0.1, 1.6);
+    }
+
+    private trackBigStonerShockwave(node: PixiGraphics, duration: number, minScale: number, maxScale: number): void {
+        this.bigStonerShockwaves.push({
+            node,
+            life: duration,
+            initialLife: duration,
+            minScale,
+            maxScale
+        });
+    }
+
+    private spawnBigStonerCallout(position: { x: number; y: number }, tier: TierConfig, score: number, comboMultiplier: number): void {
+        const multiplierSuffix = comboMultiplier > 1 ? ` (x${comboMultiplier.toFixed(1)} combo)` : '';
+        const text = new PixiText({
+            text: `STONER BLAST\n+${score}${multiplierSuffix}`,
+            style: {
+                fontFamily: 'Arial Black',
+                fontSize: 40,
+                fill: 0xfff3b0,
+                fontWeight: '900',
+                align: 'center',
+                stroke: { color: 0x8b5cf6, width: 6 },
+                dropShadow: {
+                    color: 0x1f2937,
+                    blur: 3,
+                    distance: 3,
+                    angle: Math.PI / 2,
+                    alpha: 0.85
+                },
+                letterSpacing: 1
+            }
+        });
+        text.anchor.set(0.5);
+        const targetY = Math.max(120, position.y - tier.radius - 50);
+        text.position.set(this.gameWidth / 2, targetY);
+        this.addChild(text);
+        this.bigStonerCallouts.push({
+            node: text,
+            life: 1.6,
+            initialLife: 1.6
+        });
+    }
+
+    private spawnScreenFlash(color: number, duration: number = 0.3): void {
+        const overlay = new PixiGraphics();
+        overlay.rect(0, 0, this.gameWidth, this.gameHeight);
+        overlay.fill({ color, alpha: 0.35 });
+        overlay.alpha = 0.85;
+        overlay.interactive = false;
+        this.addChild(overlay);
+        this.screenFlashes.push({
+            node: overlay,
+            life: duration,
+            initialLife: duration
+        });
     }
     
     private updateScoreDisplay(): void {
@@ -447,12 +555,10 @@ export class GameScene extends PixiContainer implements SceneInterface {
         // Update danger tracking and UI each tick
         this.updateDangerState();
         
+        const dt = this.computeDeltaSeconds(framesPassed);
+
         // Animate floating combo notifications
         if (this.comboNotifications.length) {
-            // Convert frames to seconds (60fps base) with robust numeric fallback
-            const rawFrames = Number(framesPassed);
-            const safeFrames = Number.isFinite(rawFrames) ? rawFrames : 1;
-            const dt = Math.min(Math.max(safeFrames, 0), 5) / 60;
             for (let i = this.comboNotifications.length - 1; i >= 0; i--) {
                 const n = this.comboNotifications[i];
                 n.node.position.x += n.vx * dt;
@@ -475,10 +581,63 @@ export class GameScene extends PixiContainer implements SceneInterface {
                     this.comboNotifications.splice(i, 1);
                 }
             }
-            // no debug overlay
         }
-        
+
+        if (this.bigStonerCallouts.length) {
+            for (let i = this.bigStonerCallouts.length - 1; i >= 0; i--) {
+                const entry = this.bigStonerCallouts[i];
+                entry.life -= dt;
+                entry.node.position.y -= 25 * dt;
+                const progress = 1 - entry.life / entry.initialLife;
+                const eased = 1 - Math.pow(1 - Math.max(0, Math.min(1, progress)), 3);
+                entry.node.alpha = Math.max(0, 1 - eased);
+                entry.node.scale.set(1 + 0.25 * Math.sin(eased * Math.PI));
+                if (entry.life <= 0) {
+                    this.removeChild(entry.node);
+                    entry.node.destroy();
+                    this.bigStonerCallouts.splice(i, 1);
+                }
+            }
+        }
+
+        if (this.bigStonerShockwaves.length) {
+            for (let i = this.bigStonerShockwaves.length - 1; i >= 0; i--) {
+                const wave = this.bigStonerShockwaves[i];
+                wave.life -= dt;
+                const progress = 1 - wave.life / wave.initialLife;
+                const eased = 1 - Math.pow(1 - Math.max(0, Math.min(1, progress)), 2);
+                const scale = wave.minScale + (wave.maxScale - wave.minScale) * eased;
+                wave.node.scale.set(scale);
+                wave.node.alpha = Math.max(0, 0.9 * (1 - eased));
+                if (wave.life <= 0) {
+                    this.removeChild(wave.node);
+                    wave.node.destroy();
+                    this.bigStonerShockwaves.splice(i, 1);
+                }
+            }
+        }
+
+        if (this.screenFlashes.length) {
+            for (let i = this.screenFlashes.length - 1; i >= 0; i--) {
+                const flash = this.screenFlashes[i];
+                flash.life -= dt;
+                flash.node.alpha = Math.max(0, flash.life / flash.initialLife);
+                if (flash.life <= 0) {
+                    this.removeChild(flash.node);
+                    flash.node.destroy();
+                    this.screenFlashes.splice(i, 1);
+                }
+            }
+        }
+
         // Game over handled via turn-based checks on drop
+    }
+
+    private computeDeltaSeconds(framesPassed: number): number {
+        const rawFrames = Number(framesPassed);
+        const safeFrames = Number.isFinite(rawFrames) ? rawFrames : 1;
+        const clampedFrames = Math.min(Math.max(safeFrames, 0), 5);
+        return clampedFrames / 60;
     }
 
     resize(parentWidth: number, parentHeight: number): void {
@@ -514,6 +673,21 @@ export class GameScene extends PixiContainer implements SceneInterface {
             effect.destroy();
         }
         this.mergeEffects = [];
+        for (const wave of this.bigStonerShockwaves) {
+            this.removeChild(wave.node);
+            wave.node.destroy();
+        }
+        this.bigStonerShockwaves = [];
+        for (const callout of this.bigStonerCallouts) {
+            this.removeChild(callout.node);
+            callout.node.destroy();
+        }
+        this.bigStonerCallouts = [];
+        for (const flash of this.screenFlashes) {
+            this.removeChild(flash.node);
+            flash.node.destroy();
+        }
+        this.screenFlashes = [];
         if (this.gameOverOverlay) {
             this.removeChild(this.gameOverOverlay);
             this.gameOverOverlay.destroy();

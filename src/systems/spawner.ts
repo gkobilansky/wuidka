@@ -32,19 +32,6 @@ export class BagRandomizer {
   }
 
   public draw(turnCount: number = 0): number {
-    if (turnCount < 3) {
-      return 1;
-    }
-    
-    if (this.bag.length === 0) {
-      this.refillBag();
-    }
-    
-    return this.bag.pop()!;
-  }
-
-  public peek(turnCount: number = 0): number {
-    // For first 2 turns, only show tier 1
     if (turnCount < 2) {
       return 1;
     }
@@ -53,7 +40,7 @@ export class BagRandomizer {
       this.refillBag();
     }
     
-    return this.bag[this.bag.length - 1];
+    return this.bag.pop()!;
   }
 }
 
@@ -93,7 +80,7 @@ export class Spawner {
 
   public canDrop(): boolean {
     const now = Date.now();
-    const rateWindow = 10 * 1000; // 10 seconds in milliseconds
+    const rateWindow = 10 * 200; // 3 seconds in milliseconds
     
     // Clean up old entries
     this.dropHistory = this.dropHistory.filter(timestamp => 

@@ -111,7 +111,7 @@ export class GameScene extends PixiContainer implements SceneInterface {
         // Compute dynamic danger Y just below score (fallback to config)
         const belowScoreY = (this.scoreDisplay?.position.y || 0) + this.scoreUiHeight + 8;
         // Use whichever is lower on the screen (greater Y) to ensure it's under the UI
-        this.dangerY = Math.max(belowScoreY, GAME_CONFIG.dangerLineY);
+        this.dangerY = Math.min(belowScoreY, GAME_CONFIG.dangerLineY);
 
         // Create the danger line (hidden by default)
         this.dangerLine = new PixiGraphics();

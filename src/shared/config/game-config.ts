@@ -50,17 +50,17 @@ export const GAME_CONFIG: GameConfig = {
   maxBodies: 120,
   
   // Game mechanics
-  dangerLineY: 25, // pixels from top
+  dangerLineY: 35, // pixels from top
   dangerTurnLimit: 3, // turns a piece can remain in danger zone
-  dangerFallVyThreshold: 0.5, // hide danger while pieces are falling faster than this vy
-  dangerSuppressMs: 1500, // hide danger line for 1.5s after each turn
+  dangerFallVyThreshold: 0.7, // hide danger while pieces are falling faster than this vy
+  dangerSuppressMs: 500, // hide danger line for this long after a drop
   comboWindowMs: 2500, // 2 second combo window
   mergeRestMs: 25, // ms to wait before confirming merge
   bigStonerTierId: 11,
   bigStonerClearScore: 420,
   
   // Input rate limiting
-  dropRateLimit: 10, // 10 drops per 10 seconds
+  dropRateLimit: 3, // 10 drops per 10 seconds
   
   // Tier system
   allowedSpawnTierIds: [1,2,3,4,5],

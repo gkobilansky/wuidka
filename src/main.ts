@@ -1,5 +1,6 @@
 import './style.css';
 import '@pixi/gif';
+import { inject } from '@vercel/analytics';
 import { App } from './app';
 import { Manager } from './entities/manager';
 import { IPixiApplicationOptions, PixiAssets } from './plugins/engine';
@@ -19,6 +20,7 @@ import { connectivityStore, ConnectivityState } from './shared/state/connectivit
 const INFO_MODAL_BREAKPOINT = '(max-width: 768px)';
 
 connectivityStore.init();
+inject();
 
 const applyLayoutSettings = () => {
     const root = document.documentElement;

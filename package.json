@@ -21,6 +21,7 @@
   "dependencies": {
     "@pixi/gif": "^3.0.1",
     "@pixi/sound": "^6.0.1",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/postgres": "^0.10.0",
     "matter-js": "^0.20.0",
     "pixi.js": "^8.6.2",

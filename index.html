@@ -84,36 +84,53 @@
         </form>
         </div>
       </aside>
-      <div id="game-container">
-        <div class="game-controls" role="group" aria-label="Game controls">
-          <button
-            id="sound-toggle"
-            class="control-toggle sound-toggle"
-            type="button"
-            data-state="unmuted"
-            aria-pressed="false"
-            aria-label="Toggle game sound"
-            title="Mute sound"
-          >
-            <span class="sound-toggle__glyph" aria-hidden="true">🔊</span>
-            <span class="sr-only">Toggle sound</span>
-          </button>
-          <button
-            id="info-toggle"
-            class="control-toggle info-toggle"
-            type="button"
-            aria-controls="info-panel"
-            aria-expanded="false"
-            aria-label="Open Wuidka info"
-          >
-            i
-          </button>
+      <div class="game-stage">
+        <div id="game-container">
+          <div class="game-controls" role="group" aria-label="Game controls">
+            <button
+              id="sound-toggle"
+              class="control-toggle sound-toggle"
+              type="button"
+              data-state="unmuted"
+              aria-pressed="false"
+              aria-label="Toggle game sound"
+              title="Mute sound"
+            >
+              <span class="sound-toggle__glyph" aria-hidden="true">🔊</span>
+              <span class="sr-only">Toggle sound</span>
+            </button>
+            <button
+              id="info-toggle"
+              class="control-toggle info-toggle"
+              type="button"
+              aria-controls="info-panel"
+              aria-expanded="false"
+              aria-label="Open Wuidka info"
+            >
+              i
+            </button>
+          </div>
+          <canvas id="pixi-screen"></canvas>
         </div>
-        <canvas id="pixi-screen"></canvas>
+        <aside class="game-goodies">
+          <p>
+            This game is a lot more fun with goodies from
+            <a
+              href="https://weed.com"
+              target="_blank"
+              rel="noreferrer noopener"
+              class="game-goodies__link"
+            >
+              <img src="/logo/weed-com.svg" alt="weed.com" class="game-goodies__logo" />
+              <span class="game-goodies__link-icon" aria-hidden="true">↗</span>
+              <span class="sr-only">Opens weed.com in a new tab</span>
+            </a>
+          </p>
+        </aside>
       </div>
       <div id="sidebar-panels">
         <aside id="leaderboard-panel" aria-live="polite">
-          <h2>Weekly Top 5</h2>
+          <h2>🏆 Weekly Top 5</h2>
           <div id="leaderboard-list" data-state="loading" aria-live="polite"></div>
         </aside>
         <section id="friends-panel" aria-label="Friends tier list"></section>
@@ -151,7 +168,7 @@
           </li>
         </ul>
         <nav class="site-footer__links" aria-label="Footer links">
-          <a href="https://weed.com/social" target="_blank" rel="noreferrer noopener">Say hi</a>
+          <a href="https://weed.com/contact-us" target="_blank" rel="noreferrer noopener">Say hi</a>
           <a href="https://weed.com/terms-of-service" target="_blank" rel="noreferrer noopener">Fine print</a>
           <a href="https://weed.com/privacy-policy" target="_blank" rel="noreferrer noopener">Privacy-ish</a>
           <a href="https://weed.com" target="_blank" rel="noreferrer noopener">Shop weed.com</a>

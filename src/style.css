@@ -330,6 +330,64 @@ hr {
   display: block;
 }
 
+.game-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  width: min(100%, var(--game-width-px, 400px));
+}
+
+.game-goodies {
+  width: 100%;
+  max-width: var(--game-width-px, 400px);
+  padding: 0.65rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(31, 74, 42, 0.15);
+  background: rgba(255, 255, 255, 0.62);
+  color: #1f4a2a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 12px 24px rgba(31, 74, 42, 0.16);
+  box-sizing: border-box;
+}
+
+.game-goodies p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.game-goodies__logo {
+  height: 1.1rem;
+  width: auto;
+  display: inline-block;
+}
+
+.game-goodies__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.game-goodies__link-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.game-goodies__link:focus-visible,
+.game-goodies__link:hover {
+  text-decoration: underline;
+}
+
 .game-over-form {
   position: absolute;
   top: 50%;
@@ -411,7 +469,7 @@ hr {
 }
 
 .game-over-form__actions button[type='submit'] {
-  background: #1d4ed8;
+  background: #21702e;
   color: #fff;
 }
 
@@ -446,7 +504,7 @@ hr {
 }
 
 .game-over-form__status[data-state='skipped'] {
-  color: #1f2937;
+  color: #1f372b;
 }
 
 .game-over-form__status[data-state='offline'] {
@@ -944,7 +1002,7 @@ button {
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: #21702eae;
 }
 
 button.control-toggle {

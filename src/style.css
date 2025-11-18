@@ -33,6 +33,12 @@ body {
   min-height: 100vh;
   padding: var(--page-padding-y) var(--page-padding-x) calc(var(--page-padding-y) * 2.5);
   box-sizing: border-box;
+  background-color: #ffe797;
+  background-image: url('/patterns/pieces-field.png');
+  background-size: 550px 550px;
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-position: center top;
 }
 
 body.info-modal-open {

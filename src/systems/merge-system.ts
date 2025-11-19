@@ -118,6 +118,8 @@ export class MergeSystem {
     const now = Date.now();
     const candidatesToProcess: Array<{ key: string; candidate: MergeCandidate }> = [];
     const candidatesToRemove: string[] = [];
+    const piecesReservedForMerge: Set<string> = new Set();
+    const piecesMergedThisFrame: Set<string> = new Set();
 
     // Check all merge candidates
     for (const [key, candidate] of this.mergeCandidates) {
@@ -136,10 +138,19 @@ export class MergeSystem {
       if (timeWaiting >= GAME_CONFIG.mergeRestMs && !candidate.confirmed) {
         // Check if pieces are still close enough and moving slowly
         if (this.canConfirmCandidate(candidate)) {
+          if (piecesReservedForMerge.has(candidate.piece1.id) || piecesReservedForMerge.has(candidate.piece2.id)) {
+            const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+            console.log(`${label} skipped - piece already scheduled to merge this frame`);
+            candidatesToRemove.push(key);
+            continue;
+          }
+
           const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
           console.log(`${label} confirmed for ${candidate.piece1.tier.name} pieces after ${timeWaiting}ms`);
           candidate.confirmed = true;
           candidatesToProcess.push({ key, candidate });
+          piecesReservedForMerge.add(candidate.piece1.id);
+          piecesReservedForMerge.add(candidate.piece2.id);
         } else {
           // Conditions no longer met, remove candidate
           const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
@@ -151,11 +162,29 @@ export class MergeSystem {
 
     // Process confirmed merges
     for (const { key, candidate } of candidatesToProcess) {
+      const stillExists =
+        this.physicsWorld.getPiece(candidate.piece1.id) &&
+        this.physicsWorld.getPiece(candidate.piece2.id);
+
+      if (!stillExists) {
+        candidatesToRemove.push(key);
+        continue;
+      }
+
+      if (piecesMergedThisFrame.has(candidate.piece1.id) || piecesMergedThisFrame.has(candidate.piece2.id)) {
+        const label = candidate.mode === 'big-stoner' ? 'Big Stoner clear' : 'Merge';
+        console.log(`${label} skipped - piece already merged earlier this frame`);
+        candidatesToRemove.push(key);
+        continue;
+      }
+
       if (candidate.mode === 'big-stoner') {
         this.executeBigStonerDetonation(candidate);
       } else {
         this.executeMerge(candidate);
       }
+      piecesMergedThisFrame.add(candidate.piece1.id);
+      piecesMergedThisFrame.add(candidate.piece2.id);
       candidatesToRemove.push(key);
     }
 
